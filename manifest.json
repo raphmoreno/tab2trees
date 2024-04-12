@@ -1,0 +1,27 @@
+{
+    "manifest_version": 3,
+    "name": "Forest New Tab",
+    "description": "Grow a forest in your new tab.",
+    "version": "1.1",
+    "permissions": ["tabs","storage", "activeTab"],
+    "background": {
+      "service_worker": "background.js"
+    },
+    "action": {
+      "default_popup": "newtab.html",
+      "default_icon": {
+        "16": "images/tree-16.png",
+        "48": "images/tree-48.png",
+        "128": "images/tree-128.png"
+      }
+    },
+    "chrome_url_overrides": {
+      "newtab": "newtab.html"
+    },
+    "icons": {
+      "16": "images/tree-16.png",
+      "48": "images/tree-48.png",
+      "128": "images/tree-128.png"
+    }
+  }
+  

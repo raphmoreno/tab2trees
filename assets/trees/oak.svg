@@ -1,0 +1,14 @@
+<svg class="tree" xmlns="http://www.w3.org/2000/svg" viewBox="350 40 110 200" width="30" height="40">
+            <g>
+                <g><g><g style="enable-background:new;"><g><polygon style="fill:#259D63;" points="427.332,208.37 401.678,223.307 375.806,208.37 401.51,193.432"/></g>
+                <g><polygon style="fill:#218C59;" points="427.332,208.37 427.332,225.927 401.678,240.865 401.678,223.307"/></g>
+                <g><polygon style="fill:#17623E;" points="401.678,223.307 401.678,240.865 375.806,225.928 375.806,208.37"/></g></g></g>
+                <g><g><g style="enable-background:new;"><g><polygon style="fill:#654123;" points="409.828,176.144 401.631,180.908 393.38,176.144 401.577,171.38"/></g>
+                <g><polygon style="fill:#5A3B20;" points="409.828,176.144 409.758,209.328 401.561,214.092 401.631,180.908"/></g>
+                <g><polygon style="fill:#3F2916;" points="401.631,180.908 401.561,214.092 393.31,209.329 393.38,176.144"/></g></g></g></g>
+                <g><g style="enable-background:new;"><g><polygon style="fill:#218C59;" points="450.123,167.739 401.774,195.89 401.774,73.259"/></g>
+                <g><polygon style="fill:#17623E;" points="401.774,73.259 401.774,195.89 353.015,167.739"/></g></g></g>
+                <g><g style="enable-background:new;"><g><polygon style="fill:#1F8253;" points="450.123,143.878 401.774,172.03 401.774,49.399"/></g>
+                <g><polygon style="fill:#145233;" points="401.774,49.399 401.774,172.03 353.015,143.879"/></g></g></g>
+    </g>
+</svg>

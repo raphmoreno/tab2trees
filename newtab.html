@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Macondo&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <title>New forest tab</title>
+    <style>
+        body {
+            flex-direction: column;
+            background-color: #A2D8C0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            height: 100vh; /* Ensure full viewport height coverage */
+            width: 100%;
+            font-family:Macondo;
+        }
+        .macondo-regular {
+            font-family: "Macondo", cursive;
+            font-weight: 400;
+            font-style: normal;
+        }
+
+        #forest {
+            position: relative;
+            width: calc(150px * 8); /* Adjust based on the number of tiles and their width */
+            height: 800px; /* Adjust based on your needs and the grid's size */
+            margin: auto; /* Center the grid horizontally */
+            transform: scale(0.5); /* Optional: scale down if the grid is too large */
+            transform-origin: 50% 0%; /* Adjust scaling origin if needed */
+        }
+        #treeCounter, #coinCounter, #resetButton {
+            position: fixed;
+            z-index: 10; /* Ensure these elements stay above the grid */
+        }
+        #treeCounter {
+            bottom: 20px;
+            left: 20px;
+        }
+        #coinCounter {
+            bottom: 50px;
+            left: 20px;
+        }
+        #resetButton {
+            top: 20px;
+            right: 20px;
+            padding: 10px;
+            cursor: pointer;
+        }
+        #title {
+            font-size: 24px;
+            padding-top: 30px;
+            padding-bottom: 30px;
+        }
+
+        #isometric-grid{
+            position:relative;
+        }
+        .isometric-tile {
+            position: absolute;
+            width: 150px; /* Adjust based on SVG size */
+            height: 100px; /* Adjust based on SVG size */
+            /* No margin adjustment needed as positioning is absolute */
+        }
+        #description{
+            margin-bottom: 20px;
+        }
+
+    </style>    
+</head>
+<body>
+    <div id="title">Grow your forest</div>
+    <div id="description">Each new tab grows a part of your forest. Every 100 trees will plant a tree in real life</div>
+    <div id="isometric-grid"></div>
+    <div id="treeCounter">Trees: 0</div>
+    <div id="coinCounter">Coins: 0</div>
+    <button id="resetButton">Reset Forest</button>
+    <script src="newtab.js"></script>
+</body>
+</html>

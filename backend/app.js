@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const rateLimit = require('express-rate-limit');
-
+const cors = require('cors');
 const app = express();
 app.use(bodyParser.json());
 
@@ -22,6 +22,8 @@ const tileLimiter = rateLimit({
         });
     }
 });
+
+app.use(cors());  // Place this before your routes are defined
 
 // POST handler to increment and get the global tile count
 app.post('/api/tiles', tileLimiter, (req, res) => {

@@ -1,11 +1,66 @@
+document.addEventListener('DOMContentLoaded', function() {
+    getLocation();
+});
+
 const tileTypes = ['grass', 'soil', 'rocks', 'river', 'wheat'];
 const assetTypes = {
     none: [],
-    tree: ['oak', 'pine', 'birch'], // Example tree types
-    // animal: ['fox', 'bird', 'squirrel'] // Example animal types
+    treeTypes: ['oak', 'pine', 'birch'], 
+    // animalTypes: ['fox', 'bird', 'squirrel'] // animal types
 };
 const bgColor = ["#71C4C2", "#E3BCB5", "#E8D8D2", "#F7F7F7"]
 
+function getLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(showPosition, showError);
+    } else {
+        console.log("Geolocation is not supported by this browser.");
+    }
+}
+
+function showPosition(position) {
+    const latitude = position.coords.latitude;
+    const longitude = position.coords.longitude;
+    fetchWeather(latitude, longitude); 
+}
+
+function fetchWeather(lat, lon) {
+    const apiKey = '74a3227a31a8d6836732c84f29a6f015'; 
+    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
+
+    fetch(url)
+        .then(response => response.json())
+        .then(data => displayWeather(data))
+        .catch(error => console.error('Error fetching weather data:', error));
+}
+
+
+function showError(error) {
+    switch(error.code) {
+        case error.PERMISSION_DENIED:
+            console.log("User denied the request for Geolocation.");
+            break;
+        case error.POSITION_UNAVAILABLE:
+            console.log("Location information is unavailable.");
+            break;
+        case error.TIMEOUT:
+            console.log("The request to get user location timed out.");
+            break;
+        case error.UNKNOWN_ERROR:
+            console.log("An unknown error occurred.");
+            break;
+    }
+}
+
+function displayWeather(data) {
+    const weatherInfo = document.getElementById('weatherInfo');
+    weatherInfo.innerHTML = `
+        <h3>Weather Information</h3>
+        <p>Temperature: ${data.main.temp} °C</p>
+        <p>Weather: ${data.weather[0].main}</p>
+        <p>Humidity: ${data.main.humidity}%</p>
+    `;
+}
 
 // Initialize or load the counters
 chrome.storage.local.get({gridTreeCount: 0, lifetimeTreeCount: 0, coins: 0}, function(data) {
@@ -13,14 +68,12 @@ chrome.storage.local.get({gridTreeCount: 0, lifetimeTreeCount: 0, coins: 0}, fun
     updateCounterDisplay(data.gridTreeCount, data.lifetimeTreeCount, data.coins);
 });
 
-// Assumes a function like this initializes or updates the display
 function updateForestDisplay(count) {
     const forestElement = document.getElementById('isometric-grid');
     const background = document.body;
     background.style.backgroundColor = getRandomItem(bgColor)
     forestElement.innerHTML = ''; // Clear existing tiles
 
-    // Assuming a fixed grid width for simplicity. Adjust as needed.
     const gridWidth = 8; // Number of tiles in a row
 
     for (let i = 0; i < count; i++) {
@@ -74,7 +127,7 @@ function fetchAndDisplayPNG(path, containerElement, width, height, row, col) {
 
     // Calculate isometric positions
     const isoX = (col - row) * width / 2;
-    const isoY = (col + row) * height / 4; // Dividing by 4 reduces the vertical overlap, adjust as necessary
+    const isoY = (col + row) * height / 4; // Dividing by 4 reduces the vertical overlap
 
     img.style.position = 'absolute';
     img.style.left = `${isoX + containerElement.offsetWidth / 2 - width / 2}px`; // Centering the grid
@@ -92,7 +145,6 @@ function updateCounterDisplay(gridCount, lifetimeCount, coins) {
     document.getElementById('coinCounter').textContent = `Coins: ${coins}`;
 }
 
-// Adjusted function to handle both counters and coins
 function incrementTreeCounter() {
     chrome.storage.local.get({gridTreeCount: 0, lifetimeTreeCount: 0, coins: 0}, function(data) {
         let newGridCount = data.gridTreeCount + 1;
@@ -132,14 +184,12 @@ document.getElementById('resetButton').addEventListener('click', function() {
     });
 });
 
-// Modify existing listeners to use incrementTreeCounter
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     if (request.action === "incrementTreeCounter") {
         incrementTreeCounter();
     }
 });
 
-// Call incrementTreeCounter when a new tab is created
 chrome.tabs.onCreated.addListener(function() {
     incrementTreeCounter();
 });

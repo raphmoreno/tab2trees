@@ -9,6 +9,20 @@ const assetTypes = {
     // animalTypes: ['fox', 'bird', 'squirrel'] // animal types
 };
 const bgColor = ["#71C4C2", "#E3BCB5", "#E8D8D2", "#F7F7F7"]
+const shopItems = [
+    { id: 1, name: "Pine Tree", cost: 100, img: "images/tree-48.png" },
+    { id: 2, name: "Oak Tree", cost: 150, img: "images/tree-48.png" },
+    { id: 3, name: "Cherry Blossom", cost: 200, img: "images/tree-48.png" },
+    { id: 4, name: "Cherry Blossom", cost: 250, img: "images/tree-48.png" },    
+    { id: 5, name: "Cherry Blossom", cost: 300, img: "images/tree-48.png" },
+    { id: 6, name: "Cherry Blossom", cost: 50, img: "images/tree-48.png" },
+    { id: 7, name: "Cherry Blossom", cost: 100, img: "images/tree-48.png" },
+    { id: 8, name: "Cherry Blossom", cost: 123, img: "images/tree-48.png" },
+    { id: 9, name: "Cherry Blossom", cost: 1023, img: "images/tree-48.png" },
+    { id: 10, name: "Cherry Blossom", cost: 999, img: "images/tree-48.png" }
+
+];
+
 
 function getLocation() {
     if (navigator.geolocation) {
@@ -54,18 +68,17 @@ function showError(error) {
 
 function displayWeather(data) {
     const weatherInfo = document.getElementById('weatherInfo');
-    weatherInfo.innerHTML = `
-        <h3>Weather Information</h3>
-        <p>Temperature: ${data.main.temp} °C</p>
-        <p>Weather: ${data.weather[0].main}</p>
-        <p>Humidity: ${data.main.humidity}%</p>
-    `;
+    weatherInfo.innerHTML = `<p>What's the weather like ? ${data.weather[0].main}</p>`;
 }
 
 // Initialize or load the counters
+
+const coinCount = localStorage.getItem('coins');
+
 chrome.storage.local.get({gridTreeCount: 0, lifetimeTreeCount: 0, coins: 0}, function(data) {
     updateForestDisplay(data.gridTreeCount);
-    updateCounterDisplay(data.gridTreeCount, data.lifetimeTreeCount, data.coins);
+    updateTreeCounterDisplay(data.gridTreeCount, data.lifetimeTreeCount);
+    updateCoinDisplay(coinCount);
 });
 
 function updateTileCount() {
@@ -90,6 +103,8 @@ function updateForestDisplay(count) {
     const forestElement = document.getElementById('isometric-grid');
     const background = document.body;
     background.style.backgroundColor = getRandomItem(bgColor)
+    updateTileCount();
+    displayTileCount();
     forestElement.innerHTML = ''; // Clear existing tiles
 
     const gridWidth = 8; // Number of tiles in a row
@@ -109,7 +124,9 @@ function updateForestDisplay(count) {
 
 function displayTileCount(count) {
     const tileCountDiv = document.getElementById('tileCount');
-    tileCountDiv.textContent = `Global Tiles Created: ${count}`;
+    let treesplanted = Math.floor(count / 1000);
+    let tabCountdown = 1000 - count % 1000;
+    tileCountDiv.innerHTML = `<p>Total trees planted: ${treesplanted} 🚀 New tree planted in ${tabCountdown} tabs</p>`;
 }
 
 function getRandomItem(items) {
@@ -162,10 +179,100 @@ function fetchAndDisplayPNG(path, containerElement, width, height, row, col) {
 
 
 
-function updateCounterDisplay(gridCount, lifetimeCount, coins) {
+function updateTreeCounterDisplay(gridCount, lifetimeCount, coins) {
     document.getElementById('treeCounter').textContent = `Trees: ${lifetimeCount}`; // Show lifetime count
+}
+
+function updateCoinDisplay(coins){
     document.getElementById('coinCounter').textContent = `Coins: ${coins}`;
 }
+
+// MONEY HANDLING
+
+function getCoins() {
+    const coins = localStorage.getItem('coins');
+    return coins ? parseInt(coins) : 0; // start with 0 coins if not set
+}
+
+function updateCoins(amount) {
+    localStorage.setItem('coins', amount);
+}
+
+function getPurchasedItems() {
+    const items = localStorage.getItem('purchasedItems');
+    return items ? JSON.parse(items) : [];
+}
+
+function addPurchasedItem(itemId) {
+    const items = getPurchasedItems();
+    items.push(itemId);
+    localStorage.setItem('purchasedItems', JSON.stringify(items));
+    updateCoinDisplay(coinCount);
+}
+
+document.getElementById('shopButton').addEventListener('click', function() {
+    document.getElementById('shopOverlay').style.display = 'flex';
+    populateShop();
+});
+
+function populateShop() {
+    const grid = document.getElementById('shopGrid');
+    grid.innerHTML = ''; // Clear previous items
+    const purchasedItems = getPurchasedItems();
+
+    shopItems.forEach(item => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'shop-item';
+
+        const img = document.createElement('img');
+        img.src = item.img;
+        img.alt = item.name;
+
+        const nameP = document.createElement('p');
+        nameP.textContent = item.name;
+
+        const costP = document.createElement('p');
+        costP.textContent = `${item.cost} Coins`;
+
+        const buyButton = document.createElement('button');
+        buyButton.textContent = 'Buy';
+        if (purchasedItems.includes(item.id)) {
+            buyButton.disabled = true;  // Disable the button if already purchased
+            buyButton.textContent = 'Purchased ✔'; // Change text to indicate purchased
+            itemDiv.classList.add('purchased');  // Optional: Add a class for styling
+        } else {
+            buyButton.addEventListener('click', () => purchaseItem(item.id, item.cost));
+        }
+
+        itemDiv.appendChild(img);
+        itemDiv.appendChild(nameP);
+        itemDiv.appendChild(costP);
+        itemDiv.appendChild(buyButton);
+
+        grid.appendChild(itemDiv);
+    });
+}
+
+
+function purchaseItem(itemId, cost) {
+    const currentCoins = getCoins();
+    if (currentCoins >= cost) {
+        updateCoins(currentCoins - cost);
+        addPurchasedItem(itemId);
+        alert('Purchase successful!');
+        document.getElementById('shopOverlay').style.display = 'none'; // Close the shop after purchase
+    } else {
+        alert('Not enough coins!');
+    }
+}
+
+function motherlode(){
+    const currentCoins = getCoins();
+    let newCount = currentCoins + 100;
+    updateCoins(newCount);
+    updateCoinDisplay(newCount);
+}
+
 
 function incrementTreeCounter() {
     chrome.storage.local.get({gridTreeCount: 0, lifetimeTreeCount: 0, coins: 0}, function(data) {
@@ -181,7 +288,8 @@ function incrementTreeCounter() {
 
         chrome.storage.local.set({gridTreeCount: newGridCount, lifetimeTreeCount: newLifetimeCount, coins: newCoins}, function() {
             updateForestDisplay(newGridCount);
-            updateCounterDisplay(newGridCount, newLifetimeCount, newCoins);
+            updateTreeCounterDisplay(newGridCount, newLifetimeCount);
+            updateCoinDisplay(newCoins);
         });
     });
 }
@@ -201,10 +309,12 @@ document.getElementById('resetButton').addEventListener('click', function() {
         // Reset only the grid counter, not the lifetime counter or coins
         chrome.storage.local.set({gridTreeCount: 0}, function() {
             updateForestDisplay(0);
-            updateCounterDisplay(0, data.lifetimeTreeCount, data.coins);
+            updateTreeCounterDisplay(0, data.lifetimeTreeCount);
         });
     });
 });
+
+document.getElementById('motherlodeButton').addEventListener('click', motherlode)
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     if (request.action === "incrementTreeCounter") {

@@ -1,0 +1,6 @@
+{const shopItems = [
+    { id: 1, name: "Pine Tree", cost: 100, img: "pine-tree.png" },
+    { id: 2, name: "Oak Tree", cost: 150, img: "oak-tree.png" },
+    { id: 3, name: "Cherry Blossom", cost: 200, img: "cherry-blossom.png" }
+];
+}

@@ -68,6 +68,24 @@ chrome.storage.local.get({gridTreeCount: 0, lifetimeTreeCount: 0, coins: 0}, fun
     updateCounterDisplay(data.gridTreeCount, data.lifetimeTreeCount, data.coins);
 });
 
+function updateTileCount() {
+    fetch('http://tab.sora-mno.link/api/add-tree', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ count: 1 })  // Increment by one each time a new tab is opened
+    })
+    .then(response => response.json())
+    .then(data => {
+        displayTileCount(data.globalTileCount);
+    })
+    .catch(error => {
+        console.error('Error updating tile count:', error);
+        displayTileCount('Error retrieving data');
+    });
+}
+
 function updateForestDisplay(count) {
     const forestElement = document.getElementById('isometric-grid');
     const background = document.body;
@@ -89,6 +107,10 @@ function updateForestDisplay(count) {
     }
 }
 
+function displayTileCount(count) {
+    const tileCountDiv = document.getElementById('tileCount');
+    tileCountDiv.textContent = `Global Tiles Created: ${count}`;
+}
 
 function getRandomItem(items) {
     return items[Math.floor(Math.random() * items.length)];

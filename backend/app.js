@@ -26,7 +26,7 @@ const tileLimiter = rateLimit({
 app.use(cors());  // Place this before your routes are defined
 
 // POST handler to increment and get the global tile count
-app.post('/api/tiles', tileLimiter, (req, res) => {
+app.post('/api/add-tree', tileLimiter, (req, res) => {
     const count = req.body.count || 1; // Default to 1 if no count is specified
     globalTileCount += count;
     res.json({ globalTileCount });

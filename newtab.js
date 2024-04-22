@@ -1,5 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     getLocation();
+    displayTileCount()
+
 });
 
 const tileTypes = ['grass', 'soil', 'rocks', 'river', 'wheat'];
@@ -81,7 +83,7 @@ chrome.storage.local.get({gridTreeCount: 0, lifetimeTreeCount: 0, coins: 0}, fun
     updateCoinDisplay(coinCount);
 });
 
-function updateTileCount() {
+function incrementTileCount() {
     fetch('http://tab.sora-mno.link/api/add-tree', {
         method: 'POST',
         headers: {
@@ -99,11 +101,31 @@ function updateTileCount() {
     });
 }
 
+function displayTileCount(count) {
+    const tileCountDiv = document.getElementById('tileCount');
+
+    if (count !== undefined) {
+        // Display the count directly if it's provided
+        tileCountDiv.textContent = `Global Tiles Created: ${count}`;
+    } else {
+        // Make a GET request to fetch the count if no count is provided
+        fetch('http://tab.sora-mno.link/api/tiles', { method: 'GET' })
+            .then(response => response.json())
+            .then(data => {
+                tileCountDiv.textContent = `Global Tiles Created: ${data.globalTileCount}`;
+            })
+            .catch(error => {
+                console.error('Error fetching tile count:', error);
+                tileCountDiv.textContent = 'Error retrieving data';
+            });
+    }
+}
+
+
 function updateForestDisplay(count) {
     const forestElement = document.getElementById('isometric-grid');
     const background = document.body;
     background.style.backgroundColor = getRandomItem(bgColor)
-    updateTileCount();
     displayTileCount();
     forestElement.innerHTML = ''; // Clear existing tiles
 
@@ -120,13 +142,6 @@ function updateForestDisplay(count) {
 
         //fetchAndDisplayPNG(tilePath, forestElement, 128, 128, row, col);
     }
-}
-
-function displayTileCount(count) {
-    const tileCountDiv = document.getElementById('tileCount');
-    let treesplanted = Math.floor(count / 1000);
-    let tabCountdown = 1000 - count % 1000;
-    tileCountDiv.innerHTML = `<p>Total trees planted: ${treesplanted} 🚀 New tree planted in ${tabCountdown} tabs</p>`;
 }
 
 function getRandomItem(items) {
@@ -317,11 +332,14 @@ document.getElementById('resetButton').addEventListener('click', function() {
 document.getElementById('motherlodeButton').addEventListener('click', motherlode)
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-    if (request.action === "incrementTreeCounter") {
+    if (request.action === "newTab") {
         incrementTreeCounter();
+        incrementTileCount();
+        console.log("message received")
     }
 });
 
 chrome.tabs.onCreated.addListener(function() {
-    incrementTreeCounter();
+    console.log("update triggered")
+    displayTileCount()
 });

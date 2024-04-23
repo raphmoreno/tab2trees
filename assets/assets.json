@@ -1,0 +1,14 @@
+[
+    {
+        "id": "tree-1",
+        "pathToAsset": "SVG/tree-1.svg",
+        "baseWidth": 25,
+        "baseHeight": 14
+    },
+    {
+        "id": "tree-2",
+        "pathToAsset": "SVG/tree-2.svg",
+        "baseWidth": 25,
+        "baseHeight": 14
+    }
+]

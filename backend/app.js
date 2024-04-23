@@ -4,11 +4,22 @@ const rateLimit = require('express-rate-limit');
 const cors = require('cors');
 const app = express();
 app.use(bodyParser.json());
+const path = require('path');
 
 const PORT = process.env.PORT || 3000;
 
 // In-memory storage for the global count of tiles
 let globalTileCount = 0;
+
+app.use(express.static('public'));
+// Additional routes could also be here
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+app.get('/privacy', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'privacy-policy.html'));
+});
+
 
 // Rate limit for the /api/tiles endpoint
 const tileLimiter = rateLimit({
@@ -34,6 +45,13 @@ app.post('/api/add-tree', tileLimiter, (req, res) => {
 
 // GET handler to view the global tile count
 app.get('/api/tiles', (req, res) => {
+    res.json({ globalTileCount });
+    // OR, if you want to keep it POST-only:
+    // res.status(405).send("This endpoint requires a POST request.");
+});
+
+// GET handler to view the global tile count
+app.get('/home', (req, res) => {
     res.json({ globalTileCount });
     // OR, if you want to keep it POST-only:
     // res.status(405).send("This endpoint requires a POST request.");

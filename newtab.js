@@ -12,16 +12,16 @@ const assetTypes = {
 };
 const bgColor = ["#71C4C2", "#E3BCB5", "#E8D8D2", "#F7F7F7"]
 const shopItems = [
-    { id: 1, name: "Pine Tree", cost: 100, img: "images/tree-48.png" },
-    { id: 2, name: "Oak Tree", cost: 150, img: "images/tree-48.png" },
-    { id: 3, name: "Cherry Blossom", cost: 200, img: "images/tree-48.png" },
-    { id: 4, name: "Cherry Blossom", cost: 250, img: "images/tree-48.png" },    
-    { id: 5, name: "Cherry Blossom", cost: 300, img: "images/tree-48.png" },
-    { id: 6, name: "Cherry Blossom", cost: 50, img: "images/tree-48.png" },
-    { id: 7, name: "Cherry Blossom", cost: 100, img: "images/tree-48.png" },
-    { id: 8, name: "Cherry Blossom", cost: 123, img: "images/tree-48.png" },
-    { id: 9, name: "Cherry Blossom", cost: 1023, img: "images/tree-48.png" },
-    { id: 10, name: "Cherry Blossom", cost: 999, img: "images/tree-48.png" }
+    { id: 1, name: "Pine Tree", type:"tree", cost: 100, img: "images/tree-48.png" },
+    { id: 2, name: "Oak Tree", type:"tree", cost: 150, img: "images/tree-48.png" },
+    { id: 3, name: "Cherry Blossom", type:"option", cost: 200, img: "images/tree-48.png" },
+    { id: 4, name: "Cherry Blossom", type:"tree", cost: 250, img: "images/tree-48.png" },    
+    { id: 5, name: "Cherry Blossom", type:"option", cost: 300, img: "images/tree-48.png" },
+    { id: 6, name: "Cherry Blossom", type:"tree", cost: 50, img: "images/tree-48.png" },
+    { id: 7, name: "Cherry Blossom", type:"animal", cost: 100, img: "images/tree-48.png" },
+    { id: 8, name: "Cherry Blossom", type:"env", cost: 123, img: "images/tree-48.png" },
+    { id: 9, name: "Cherry Blossom", type:"environment", cost: 1023, img: "images/tree-48.png" },
+    { id: 10, name: "Cherry Blossom", type:"environment", cost: 999, img: "images/tree-48.png" }
 
 ];
 
@@ -135,8 +135,10 @@ function updateForestDisplay(count) {
         const row = Math.floor(i / gridWidth);
         const col = i % gridWidth;
         const tileType = getRandomItem(tileTypes); // Random tile type
-        //const svgFilePath = `assets/tiles/${tileType}/default.svg`
-        const svgFilePath = `assets/forest.svg`
+        const forestType = getRandomItem(["forest-1", "forest-autumn", "forest-2"])
+        //const svgFilePath = `assets/SVG/${forestType}.svg`
+        const svgFilePath = `assets/SVG/forest-tile-naked.svg`
+
         // Call fetchAndDisplaySVG for each tile
         fetchAndDisplaySVG(svgFilePath, forestElement, 150, 100, row, col);
 
@@ -237,7 +239,7 @@ function populateShop() {
 
     shopItems.forEach(item => {
         const itemDiv = document.createElement('div');
-        itemDiv.className = 'shop-item';
+        itemDiv.className = 'shop-item' + `shop-item--${item.type}`;
 
         const img = document.createElement('img');
         img.src = item.img;

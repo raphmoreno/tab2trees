@@ -14,8 +14,9 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Package Extension
+      run: |
       cd tab2trees
-      run: zip -r tab2trees.zip ./* -x "*.git*" -x "backend/*" -x "*.md"
+      zip -r tab2trees.zip ./* -x "*.git*" -x "backend/*" -x "*.md"
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v2

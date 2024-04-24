@@ -129,13 +129,17 @@ function displayTileCount(count) {
 
     if (count !== undefined) {
         // Display the count directly if it's provided
-        tileCountDiv.textContent = `Global Tiles Created: ${count}`;
+        let treesplanted = Math.floor(count / 1000);
+        let tabCountdown = 1000 - count % 1000;
+        tileCountDiv.innerHTML = `<p>Total trees planted: ${treesplanted} 🚀 New tree planted in ${tabCountdown} tabs</p>`
     } else {
         // Make a GET request to fetch the count if no count is provided
         fetch('http://tab.sora-mno.link/api/tiles', { method: 'GET' })
             .then(response => response.json())
             .then(data => {
-                tileCountDiv.textContent = `Global Tiles Created: ${data.globalTileCount}`;
+                let treesplanted = Math.floor(data.globalTileCount / 1000);
+                let tabCountdown = 1000 - data.globalTileCount % 1000;
+                tileCountDiv.innerHTML = `<p>Total trees planted: ${treesplanted} 🚀 New tree planted in ${tabCountdown} tabs</p>`;
             })
             .catch(error => {
                 console.error('Error fetching tile count:', error);
@@ -305,6 +309,7 @@ function incrementTreeCounter() {
             updateCoinDisplay(newCoins);
         });
     });
+}
 
 // UTILITIES
 

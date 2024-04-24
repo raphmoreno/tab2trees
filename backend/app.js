@@ -6,10 +6,37 @@ const app = express();
 app.use(bodyParser.json());
 const path = require('path');
 
+const redis = require('redis');
+
+// Create a client and connect to Redis server running on localhost:6379
+const client = redis.createClient({
+    url: 'redis://default:x8C39DVF11Istc6@localhost:6379'
+});
+
+client.on('error', (err) => console.log('Redis Client Error', err));
+
+client.connect();
+
+// Example usage of the Redis client
+async function testRedis() {
+    await client.set('test', 'value');
+    const value = await client.get('test');
+    console.log(value);  // Outputs: value
+}
+
+testRedis();
+initializeTileCount();
+
 const PORT = process.env.PORT || 3000;
 
 // In-memory storage for the global count of tiles
-let globalTileCount = 0;
+
+async function initializeTileCount() {
+    const exists = await client.exists('globalTileCount');
+    if (!exists) {
+        await client.set('globalTileCount', 0); // Set to 0 or to an initial value
+    }
+}
 
 app.use(express.static('public'));
 // Additional routes could also be here
@@ -37,24 +64,26 @@ const tileLimiter = rateLimit({
 app.use(cors());  // Place this before your routes are defined
 
 // POST handler to increment and get the global tile count
-app.post('/api/add-tree', tileLimiter, (req, res) => {
-    const count = req.body.count || 1; // Default to 1 if no count is specified
-    globalTileCount += count;
-    res.json({ globalTileCount });
+app.post('/api/add-tree', tileLimiter, async (req, res) => {
+    const count = parseInt(req.body.count || 1); // Default to 1 if no count is specified
+    try {
+        const newCount = await client.incrby('globalTileCount', count); // Redis increments the count
+        res.json({ globalTileCount: newCount });
+    } catch (error) {
+        console.error('Redis Error:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
 });
 
 // GET handler to view the global tile count
-app.get('/api/tiles', (req, res) => {
-    res.json({ globalTileCount });
-    // OR, if you want to keep it POST-only:
-    // res.status(405).send("This endpoint requires a POST request.");
-});
-
-// GET handler to view the global tile count
-app.get('/home', (req, res) => {
-    res.json({ globalTileCount });
-    // OR, if you want to keep it POST-only:
-    // res.status(405).send("This endpoint requires a POST request.");
+app.get('/api/tiles', async (req, res) => {
+    try {
+        const globalTileCount = await client.get('globalTileCount');
+        res.json({ globalTileCount: parseInt(globalTileCount) });
+    } catch (error) {
+        console.error('Redis Error:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
 });
 
 // Payment simulation endpoint

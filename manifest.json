@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
-    "name": "Forest New Tab",
-    "description": "Grow a forest in your new tab.",
+    "name": "Tab2Trees",
+    "description": "Grow a forest in every new tab.",
     "version": "1.1",
     "permissions": ["tabs","storage", "activeTab"],
     "background": {

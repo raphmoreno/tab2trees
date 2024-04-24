@@ -1,0 +1,23 @@
+name: Package Chrome Extension
+
+on:
+  push:
+    branches:
+      - main  # Set this to the branch you use
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Package Extension
+      run: zip -r tab2trees.zip ./* -x "*.git*" -x "backend/*" -x "*.md"
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: chrome-extension
+        path: tab2trees.zip

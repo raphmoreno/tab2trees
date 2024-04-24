@@ -72,7 +72,7 @@ app.use(cors());  // Place this before your routes are defined
 app.post('/api/add-tree', tileLimiter, async (req, res) => {
     const count = parseInt(req.body.count || 1); // Default to 1 if no count is specified
     try {
-        const newCount = await client.incrby('globalTileCount', count); // Redis increments the count
+        const newCount = await client.hIncrBy('globalTileCount', count); // Redis increments the count
         res.json({ globalTileCount: newCount });
     } catch (error) {
         console.error('Redis Error:', error);

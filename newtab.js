@@ -163,8 +163,8 @@ function updateForestDisplay(count) {
         const col = i % gridWidth;
         const tileType = getRandomItem(tileTypes); // Random tile type
         const forestType = getRandomItem(["forest-1", "forest-autumn", "forest-2"])
-        //const svgFilePath = `assets/SVG/${forestType}.svg`
-        const svgFilePath = `assets/SVG/forest-tile-naked.svg`
+        const svgFilePath = `assets/SVG/${forestType}.svg`
+        // const svgFilePath = `assets/SVG/forest-tile-naked.svg`
         // Call fetchAndDisplaySVG for each tile
         fetchAndDisplaySVG(svgFilePath, forestElement, 150, 100, row, col);
     }

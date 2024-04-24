@@ -9,22 +9,27 @@ const path = require('path');
 const redis = require('redis');
 
 // Create a client and connect to Redis server running on localhost:6379
+// Create a client and connect to Redis server
 const client = redis.createClient({
-    url: 'redis://default:x8C39DVF11Istc6@localhost:6379'
+    socket: {
+        host: '13.36.217.215',
+        port: 6379
+    },
+    password: 'x8C39DVF11Istc6'
 });
-
-client.on('error', (err) => console.log('Redis Client Error', err));
 
 client.connect();
 
-// Example usage of the Redis client
-async function testRedis() {
-    await client.set('test', 'value');
-    const value = await client.get('test');
-    console.log(value);  // Outputs: value
-}
+client.on('ready', function () {
+    console.log('Redis is ready to accept commands');
+});
 
-testRedis();
+client.on('end', function () {
+    console.log('Connection to Redis has been closed');
+});
+
+// Example usage of the Redis client
+
 initializeTileCount();
 
 const PORT = process.env.PORT || 3000;

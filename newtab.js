@@ -6,12 +6,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
 });
 let isDebugMode = false;
-const tileTypes = ['grass', 'soil', 'rocks', 'river', 'wheat'];
-const assetTypes = {
-    none: [],
-    treeTypes: ['oak', 'pine', 'birch'], 
-    // animalTypes: ['fox', 'bird', 'squirrel'] // animal types
-};
+
+const gridWidth = 6;
+
+function buildTileSet(){
+    const tileSet = [];
+
+    return tileSet
+}
+
+const tileTypes = ['forest-1', 'forest-2', 'forest-autumn'];
 
 const shopItems = [
     { id: 1, name: "Oak (Autumn)", type:"tree", cost: 30, img: "assets/SVG/tree-2.svg" },
@@ -68,7 +72,6 @@ function fetchWeather(lat, lon) {
         .catch(error => console.error('Error fetching weather data:', error));
 }
 
-
 function showError(error) {
     switch(error.code) {
         case error.PERMISSION_DENIED:
@@ -120,11 +123,15 @@ function changeBackground(type) {
 // Initialize or load the counters
 
 const coinCount = getCoins();
+updateCoinDisplay(coinCount);
 
-chrome.storage.local.get({gridTreeCount: 0, lifetimeTreeCount: 0}, function(data) {
-    updateForestDisplay(data.gridTreeCount);
-    updateTreeCounterDisplay(data.gridTreeCount, data.lifetimeTreeCount);
-    updateCoinDisplay(coinCount);
+chrome.storage.local.get({lifetimeTreeCount: 0}, function(data) {
+    var tiles = loadForest();
+    console.log("forest size = " + tiles.length)
+    if(tiles.length < 36){
+        updateForestDisplay(tiles.length);
+    }
+    updateTreeCounterDisplay(data.tiles.length, data.lifetimeTreeCount);
 });
 
 function incrementTileCount() {
@@ -145,23 +152,34 @@ function incrementTileCount() {
     });
 }
 
-function incrementTreeCounter() {
-    chrome.storage.local.get({gridTreeCount: 0, lifetimeTreeCount: 0}, function(data) {
-        let newGridCount = data.gridTreeCount + 1;
+// Function triggered upon new tab creation
+
+function newTabHandler() {
+    chrome.storage.local.get({lifetimeTreeCount: 0}, function(data) {
+        let tiles = loadForest();
+        let newGridCount = tiles.length + 1;
         let newLifetimeCount = data.lifetimeTreeCount + 1; // This counter never resets
         var newCoins = getCoins();
         
         // Check if the grid is full, then reset grid counter and increment coins
-        if(newGridCount > 36) { // For an 6x6 grid
-            newGridCount = 0; // Reset grid tree count for a new grid
+        if(newGridCount > 6 * gridWidth) { // For an 6x6 grid
+            
+            // Reset grid
+            newGridCount = 0;
+            updateForestDisplay(0);
+            tiles = [];
+            
+            // Increment coins
             newCoins=newCoins+1;
             updateCoins(newCoins);
             updateCoinDisplay(newCoins);
-             // Increment coins
+             
         }
+        let newTiles = addTile(tiles);
 
-        chrome.storage.local.set({gridTreeCount: newGridCount, lifetimeTreeCount: newLifetimeCount}, function() {
-            updateForestDisplay(newGridCount);
+        chrome.storage.local.set({lifetimeTreeCount: newLifetimeCount}, function() {
+            saveForest(newTiles);
+            updateForestDisplay(newTiles.length);
             updateTreeCounterDisplay(newLifetimeCount);
         });
     });
@@ -193,23 +211,85 @@ function displayTileCount(count) {
 
 
 function updateForestDisplay(count) {
-    const forestElement = document.getElementById('isometric-grid');
-    const background = document.body;
-    displayTileCount();
-    forestElement.innerHTML = ''; // Clear existing tiles
+    const tiles = loadForest();  // Attempt to load saved tiles
+    if (tiles.length == 0 || count == 0 ) {
+        console.log("no tiles found, rebuilding forest" + count)
+        generateAndDisplayTiles(count);
+    } else {
+        console.log("found a forest" + tiles)
+        displayTiles(tiles);
+    }
+}
 
-    const gridWidth = 6; // Number of tiles in a row
+function generateAndDisplayTiles(count) {
+    const forestElement = document.getElementById('isometric-grid');
+    forestElement.innerHTML = ''; // Clear existing tiles
+    const tiles = [];
 
     for (let i = 0; i < count; i++) {
         const row = Math.floor(i / gridWidth);
         const col = i % gridWidth;
         const tileType = getRandomItem(tileTypes); // Random tile type
-        const forestType = getRandomItem(["forest-1", "forest-autumn", "forest-2"])
-        const svgFilePath = `assets/SVG/${forestType}.svg`
-        // const svgFilePath = `assets/SVG/forest-tile-naked.svg`
-        // Call fetchAndDisplaySVG for each tile
-        fetchAndDisplaySVG(svgFilePath, forestElement, 150, 100, row, col);
+        const tile = {
+            type: tileType,
+            row: row,
+            col: col
+        };
+        tiles.push(tile);
+        displayTile(tile, forestElement);
     }
+
+    saveForest(tiles);
+}
+
+function displayTiles(tiles) {
+    const forestElement = document.getElementById('isometric-grid');
+    forestElement.innerHTML = ''; // Clear existing tiles
+
+    tiles.forEach(tile => {
+        displayTile(tile, forestElement);
+    });
+}
+
+function displayTile(tile, container) {
+    const svgFilePath = `assets/SVG/${tile.type}.svg`;
+    fetchAndDisplaySVG(svgFilePath, container, 150, 100, tile.row, tile.col);
+}
+
+function addTile(tiles) {
+    const tileType = getRandomItem(tileTypes);
+    let newTile = {};
+
+    if (tiles.length === 0) {
+        // If no tiles exist, start with the first position
+        newTile = {
+            type: tileType,
+            row: 0,
+            col: 0
+        };
+    } else {
+        // Get the last tile added to calculate the new tile's position
+        const lastTile = tiles[tiles.length - 1];
+        
+        if (lastTile.col === gridWidth - 1) {
+            // If the last tile was at the end of a row, start a new row
+            newTile = {
+                type: tileType,
+                row: lastTile.row + 1,
+                col: 0
+            };
+        } else {
+            // Otherwise, continue in the same row
+            newTile = {
+                type: tileType,
+                row: lastTile.row,
+                col: lastTile.col + 1
+            };
+        }
+    }
+    console.log(newTile.row, newTile.col);
+    tiles.push(newTile);
+    return tiles;
 }
 
 // UTILITIES 
@@ -346,6 +426,23 @@ function motherlode(){
 
 // UTILITIES
 
+// Function to save the forest state
+function saveForest(tiles) {
+    localStorage.setItem('forestState', JSON.stringify(tiles));
+    console.log("forest saved !")
+}
+
+function resetForest() {
+    localStorage.removeItem('forestState');  // Clear the saved state
+    updateForestDisplay(0);  // Reset the display with zero tiles or a default number
+}
+
+// Function to load the forest state
+function loadForest() {
+    const savedTiles = localStorage.getItem('forestState');
+    return savedTiles ? JSON.parse(savedTiles) : null;
+}
+
 function toggleDebugMode() {
     isDebugMode = !isDebugMode;
     updateDebugVisibility();
@@ -382,7 +479,7 @@ function updateDebugVisibility() {
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     if (request.action === "newTab") {
-        incrementTreeCounter();
+        newTabHandler();
         incrementTileCount();
     }
 });

@@ -1,28 +1,23 @@
 document.addEventListener('DOMContentLoaded', function() {
     getLocation();
     displayTileCount();
-    buildListeners()
-});
+    buildListeners();
+    updateDebugVisibility();  // Initialize debug button visibility
 
+});
+let isDebugMode = false;
 const tileTypes = ['grass', 'soil', 'rocks', 'river', 'wheat'];
 const assetTypes = {
     none: [],
     treeTypes: ['oak', 'pine', 'birch'], 
     // animalTypes: ['fox', 'bird', 'squirrel'] // animal types
 };
-const bgColor = ["#71C4C2", "#E3BCB5", "#E8D8D2", "#F7F7F7"]
-const shopItems = [
-    { id: 1, name: "Pine Tree", type:"tree", cost: 100, img: "images/tree-48.png" },
-    { id: 2, name: "Oak Tree", type:"tree", cost: 150, img: "images/tree-48.png" },
-    { id: 3, name: "Cherry Blossom", type:"option", cost: 200, img: "images/tree-48.png" },
-    { id: 4, name: "Cherry Blossom", type:"tree", cost: 250, img: "images/tree-48.png" },    
-    { id: 5, name: "Cherry Blossom", type:"option", cost: 300, img: "images/tree-48.png" },
-    { id: 6, name: "Cherry Blossom", type:"tree", cost: 50, img: "images/tree-48.png" },
-    { id: 7, name: "Cherry Blossom", type:"animal", cost: 100, img: "images/tree-48.png" },
-    { id: 8, name: "Cherry Blossom", type:"env", cost: 123, img: "images/tree-48.png" },
-    { id: 9, name: "Cherry Blossom", type:"environment", cost: 1023, img: "images/tree-48.png" },
-    { id: 10, name: "Cherry Blossom", type:"environment", cost: 999, img: "images/tree-48.png" }
 
+const shopItems = [
+    { id: 1, name: "Oak (Autumn)", type:"tree", cost: 30, img: "assets/SVG/tree-2.svg" },
+    { id: 2, name: "Pine Tree", type:"tree", cost: 20, img: "assets/SVG/pine.svg" },
+    { id: 3, name: "Cherry Blossom (spring)", type:"tree", cost: 50, img: "assets/SVG/cherry-spring.svg" },
+    { id: 4, name: "Cherry Blossom (summer)", type:"option", cost: 100, img: "assets/SVG/cherry-summer.svg" },
 ];
 
 // Build click listeners
@@ -94,13 +89,39 @@ function showError(error) {
 function displayWeather(data) {
     const weatherInfo = document.getElementById('weatherInfo');
     weatherInfo.innerHTML = `<p>What's the weather like ? ${data.weather[0].main}</p>`;
+    changeBackground(data.weather[0].main)
+}
+
+function changeBackground(type) {
+    const bgColor = [
+        { type: "Clouds", color: "#71C4C2" },
+        { type: "Thunderstorm", color: "#E3BCB5" },
+        { type: "Rain", color: "#c4dfdd" },
+        { type: "Rain", color: "#E8D8D1" },  // Different shade for Rain
+        { type: "Clear", color: "#62788d" },
+        { type: "Clear", color: "#E1D8D1" },  // Different shade for Clear
+        { type: "Drizzle", color: "#F7F7F7" },
+        { type: "Snow", color: "#E8D8D2" }
+    ];
+
+    // Filter the array for all items matching the specified type
+    let matchingTypes = bgColor.filter(item => item.type === type);
+
+    // Select a random item from those that match
+    let randomItem = matchingTypes[Math.floor(Math.random() * matchingTypes.length)];
+
+    // Check if we have any matching items and select the color
+    let newBg = randomItem ? randomItem.color : "#FFFFFF"; // Default color if no match found
+
+    // Set the background color
+    document.body.style.backgroundColor = newBg;
 }
 
 // Initialize or load the counters
 
-const coinCount = localStorage.getItem('coins');
+const coinCount = getCoins();
 
-chrome.storage.local.get({gridTreeCount: 0, lifetimeTreeCount: 0, coins: 0}, function(data) {
+chrome.storage.local.get({gridTreeCount: 0, lifetimeTreeCount: 0}, function(data) {
     updateForestDisplay(data.gridTreeCount);
     updateTreeCounterDisplay(data.gridTreeCount, data.lifetimeTreeCount);
     updateCoinDisplay(coinCount);
@@ -121,6 +142,28 @@ function incrementTileCount() {
     .catch(error => {
         console.error('Error updating tile count:', error);
         displayTileCount('Error retrieving data');
+    });
+}
+
+function incrementTreeCounter() {
+    chrome.storage.local.get({gridTreeCount: 0, lifetimeTreeCount: 0}, function(data) {
+        let newGridCount = data.gridTreeCount + 1;
+        let newLifetimeCount = data.lifetimeTreeCount + 1; // This counter never resets
+        var newCoins = getCoins();
+        
+        // Check if the grid is full, then reset grid counter and increment coins
+        if(newGridCount > 36) { // For an 6x6 grid
+            newGridCount = 0; // Reset grid tree count for a new grid
+            newCoins=newCoins+1;
+            updateCoins(newCoins);
+            updateCoinDisplay(newCoins);
+             // Increment coins
+        }
+
+        chrome.storage.local.set({gridTreeCount: newGridCount, lifetimeTreeCount: newLifetimeCount}, function() {
+            updateForestDisplay(newGridCount);
+            updateTreeCounterDisplay(newLifetimeCount);
+        });
     });
 }
 
@@ -152,11 +195,10 @@ function displayTileCount(count) {
 function updateForestDisplay(count) {
     const forestElement = document.getElementById('isometric-grid');
     const background = document.body;
-    background.style.backgroundColor = getRandomItem(bgColor)
     displayTileCount();
     forestElement.innerHTML = ''; // Clear existing tiles
 
-    const gridWidth = 8; // Number of tiles in a row
+    const gridWidth = 6; // Number of tiles in a row
 
     for (let i = 0; i < count; i++) {
         const row = Math.floor(i / gridWidth);
@@ -169,6 +211,8 @@ function updateForestDisplay(count) {
         fetchAndDisplaySVG(svgFilePath, forestElement, 150, 100, row, col);
     }
 }
+
+// UTILITIES 
 
 function getRandomItem(items) {
     return items[Math.floor(Math.random() * items.length)];
@@ -198,9 +242,8 @@ function fetchAndDisplaySVG(svgFilePath, containerElement, width, height, row, c
         .catch(error => console.error('Error fetching SVG:', error));
 }
 
-
-function updateTreeCounterDisplay(gridCount, lifetimeCount, coins) {
-    document.getElementById('treeCounter').textContent = `Trees: ${lifetimeCount}`; // Show lifetime count
+function updateTreeCounterDisplay(lifetimeCount) {
+    document.getElementById('treeCounter').textContent = `${lifetimeCount}`; // Show lifetime count
 }
 
 // SHOP AND MONEY HANDLING
@@ -227,7 +270,7 @@ function addPurchasedItem(itemId) {
 }
 
 function updateCoinDisplay(coins){
-    document.getElementById('coinCounter').textContent = `Coins: ${coins}`;
+    document.getElementById('coinCounter').textContent = `${coins}`;
 }
 
 function populateShop() {
@@ -239,7 +282,7 @@ function populateShop() {
 
     shopItems.forEach(item => {
         const itemDiv = document.createElement('div');
-        itemDiv.className = 'shop-item' + `shop-item--${item.type}`;
+        itemDiv.className = 'shop-item' + ` shop-item--${item.type}`;
 
         const img = document.createElement('img');
         img.src = item.img;
@@ -248,14 +291,25 @@ function populateShop() {
         const nameP = document.createElement('p');
         nameP.textContent = item.name;
 
-        const costP = document.createElement('p');
-        costP.textContent = `${item.cost} Coins`;
+        const costP = document.createElement('div');
+        costP.classList.add('shopCost-container');
+        costP.innerHTML = `
+        <span class="coinIcon">
+            <img
+                src="images/coin.png"
+                alt="coins"
+                height="32"
+                width="32" />
+        </span>
+        <span>${item.cost}</span>
+    `;    
 
         const buyButton = document.createElement('button');
-        buyButton.textContent = 'Buy';
+        buyButton.classList.add("button-background-move");
+        buyButton.textContent = 'get';
         if (purchasedItems.includes(item.id)) {
             buyButton.disabled = true;  // Disable the button if already purchased
-            buyButton.textContent = 'Purchased ✔'; // Change text to indicate purchased
+            buyButton.textContent = 'unlocked ✔'; // Change text to indicate purchased
             itemDiv.classList.add('purchased');  // Optional: Add a class for styling
         } else {
             buyButton.addEventListener('click', () => purchaseItem(item.id, item.cost));
@@ -276,10 +330,10 @@ function purchaseItem(itemId, cost) {
     if (currentCoins >= cost) {
         updateCoins(currentCoins - cost);
         addPurchasedItem(itemId);
-        alert('Purchase successful!');
+        showToast('Purchase successful!');
         document.getElementById('shopOverlay').style.display = 'none'; // Close the shop after purchase
     } else {
-        alert('Not enough coins!');
+        showToast('Not enough coins!');
     }
 }
 
@@ -290,34 +344,46 @@ function motherlode(){
     updateCoinDisplay(newCount);
 }
 
+// UTILITIES
 
-function incrementTreeCounter() {
-    chrome.storage.local.get({gridTreeCount: 0, lifetimeTreeCount: 0, coins: 0}, function(data) {
-        let newGridCount = data.gridTreeCount + 1;
-        let newLifetimeCount = data.lifetimeTreeCount + 1; // This counter never resets
-        let newCoins = data.coins;
-        
-        // Check if the grid is full, then reset grid counter and increment coins
-        if(newGridCount >= 48) { // For an 8x6 grid
-            newGridCount = 0; // Reset grid tree count for a new grid
-            newCoins++; // Increment coins
-        }
-
-        chrome.storage.local.set({gridTreeCount: newGridCount, lifetimeTreeCount: newLifetimeCount, coins: newCoins}, function() {
-            updateForestDisplay(newGridCount);
-            updateTreeCounterDisplay(newGridCount, newLifetimeCount);
-            updateCoinDisplay(newCoins);
-        });
-    });
+function toggleDebugMode() {
+    isDebugMode = !isDebugMode;
+    updateDebugVisibility();
+    console.log(`Debug mode is now ${isDebugMode ? 'enabled' : 'disabled'}.`);
 }
 
-// UTILITIES
+function showToast(message) {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = message;
+
+    container.appendChild(toast);
+
+    // Trigger the animation to slide in
+    setTimeout(() => {
+        toast.classList.add('toast-show');
+    }, 100); // Wait for the DOM to update
+
+    // Automatically hide the toast after 5 seconds
+    setTimeout(() => {
+        toast.classList.remove('toast-show');
+        setTimeout(() => container.removeChild(toast), 500); // Wait for animation to finish
+    }, 5000);
+}
+
+
+function updateDebugVisibility() {
+    const debugElements = document.querySelectorAll('.debug-button');
+    debugElements.forEach(elem => {
+        elem.style.display = isDebugMode ? 'block' : 'none';
+    });
+}
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     if (request.action === "newTab") {
         incrementTreeCounter();
         incrementTileCount();
-        console.log("message received")
     }
 });
 

@@ -1,13 +1,30 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', initializeApp);
+
+let isDebugMode = false;
+const gridWidth = 6;
+const gridHeight = 6;
+const tileTypes = ['forest-1', 'forest-2', 'forest-autumn'];
+const defaultBgColor = "#FFFFFF";  // Default background color
+const API_KEY = '74a3227a31a8d6836732c84f29a6f015';
+let forestInitialized = false;  // Flag to check if the forest has been initialized
+const coinCount = getCoins();
+
+const shopItems = [
+    { id: 1, name: "Oak (Autumn)", type: "tree", cost: 30, img: "assets/SVG/tree-2.svg" },
+    { id: 2, name: "Pine Tree", type: "tree", cost: 20, img: "assets/SVG/pine.svg" },
+    { id: 3, name: "Cherry Blossom (spring)", type: "tree", cost: 50, img: "assets/SVG/cherry-spring.svg" },
+    { id: 4, name: "Cherry Blossom (summer)", type: "option", cost: 100, img: "assets/SVG/cherry-summer.svg" },
+];
+
+function initializeApp() {
     getLocation();
     displayTileCount();
     buildListeners();
-    updateDebugVisibility();  // Initialize debug button visibility
-
-});
-let isDebugMode = false;
-
-const gridWidth = 6;
+    initializeForest();
+    updateDebugVisibility();
+    updateTreeCounterDisplay();
+    updateCoinDisplay(coinCount);
+};
 
 function buildTileSet(){
     const tileSet = [];
@@ -15,35 +32,15 @@ function buildTileSet(){
     return tileSet
 }
 
-const tileTypes = ['forest-1', 'forest-2', 'forest-autumn'];
-
-const shopItems = [
-    { id: 1, name: "Oak (Autumn)", type:"tree", cost: 30, img: "assets/SVG/tree-2.svg" },
-    { id: 2, name: "Pine Tree", type:"tree", cost: 20, img: "assets/SVG/pine.svg" },
-    { id: 3, name: "Cherry Blossom (spring)", type:"tree", cost: 50, img: "assets/SVG/cherry-spring.svg" },
-    { id: 4, name: "Cherry Blossom (summer)", type:"option", cost: 100, img: "assets/SVG/cherry-summer.svg" },
-];
-
 // Build click listeners
 
-function buildListeners(){
-    document.getElementById('resetButton').addEventListener('click', function() {
-        chrome.storage.local.get({lifetimeTreeCount: 0, coins: 0}, function(data) {
-            // Reset only the grid counter, not the lifetime counter or coins
-            chrome.storage.local.set({gridTreeCount: 0}, function() {
-                updateForestDisplay(0);
-                updateTreeCounterDisplay(0, data.lifetimeTreeCount);
-            });
-        });
-    });
-    document.getElementById('shopButton').addEventListener('click', function() {
-        document.getElementById('shopOverlay').style.display = 'flex';
-        populateShop();
-    });
-    document.getElementById('overlay-cross').addEventListener('click', function() {
-        document.getElementById('shopOverlay').style.display = 'none';
-    });
-    document.getElementById('motherlodeButton').addEventListener('click', motherlode)
+function buildListeners() {
+    document.getElementById('resetButton').addEventListener('click', resetForest);
+    document.getElementById('shopButton').addEventListener('click', () => {toggleVisibility('shopOverlay', true);populateShop()});
+    document.getElementById('overlay-cross').addEventListener('click', () => toggleVisibility('shopOverlay', false));
+    document.getElementById('motherlodeButton').addEventListener('click', motherlode);
+    chrome.runtime.onMessage.addListener(handleRuntimeMessage);
+    chrome.tabs.onCreated.addListener(displayTileCount);
 }
 
 // Weather-related functions
@@ -57,19 +54,24 @@ function getLocation() {
 }
 
 function showPosition(position) {
-    const latitude = position.coords.latitude;
-    const longitude = position.coords.longitude;
-    fetchWeather(latitude, longitude); 
+    const { latitude, longitude } = position.coords;
+    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${API_KEY}&units=metric`;
+    fetchWeather(url);
 }
 
-function fetchWeather(lat, lon) {
-    const apiKey = '74a3227a31a8d6836732c84f29a6f015'; 
-    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
-
+function fetchWeather(url) {
     fetch(url)
         .then(response => response.json())
-        .then(data => displayWeather(data))
+        .then(data => {
+            displayWeather(data);
+            changeBackground(data.weather[0].main);
+        })
         .catch(error => console.error('Error fetching weather data:', error));
+}
+
+function displayWeather(data) {
+    const weatherInfo = document.getElementById('weatherInfo');
+    weatherInfo.innerHTML = `<p>What's the weather like ? ${data.weather[0].main}</p>`;
 }
 
 function showError(error) {
@@ -87,12 +89,6 @@ function showError(error) {
             console.log("An unknown error occurred.");
             break;
     }
-}
-
-function displayWeather(data) {
-    const weatherInfo = document.getElementById('weatherInfo');
-    weatherInfo.innerHTML = `<p>What's the weather like ? ${data.weather[0].main}</p>`;
-    changeBackground(data.weather[0].main)
 }
 
 function changeBackground(type) {
@@ -122,17 +118,7 @@ function changeBackground(type) {
 
 // Initialize or load the counters
 
-const coinCount = getCoins();
-updateCoinDisplay(coinCount);
 
-chrome.storage.local.get({lifetimeTreeCount: 0}, function(data) {
-    var tiles = loadForest();
-    console.log("forest size = " + tiles.length)
-    if(tiles.length < 36){
-        updateForestDisplay(tiles.length);
-    }
-    updateTreeCounterDisplay(data.tiles.length, data.lifetimeTreeCount);
-});
 
 function incrementTileCount() {
     fetch('http://tab.sora-mno.link/api/add-tree', {
@@ -154,36 +140,50 @@ function incrementTileCount() {
 
 // Function triggered upon new tab creation
 
+function initializeForest() {
+    if (!forestInitialized) {
+        const tiles = loadForest();  // Load tiles
+        if (tiles.length === 0) {
+            // If no tiles are saved, start from scratch
+            updateForestDisplay(0);
+        } else {
+            // If tiles exist, display them
+            updateForestDisplay(tiles.length);
+        }
+        forestInitialized = true;  // Set the flag as initialized
+    }
+}
+
 function newTabHandler() {
     chrome.storage.local.get({lifetimeTreeCount: 0}, function(data) {
         let tiles = loadForest();
-        let newGridCount = tiles.length + 1;
-        let newLifetimeCount = data.lifetimeTreeCount + 1; // This counter never resets
-        var newCoins = getCoins();
-        
-        // Check if the grid is full, then reset grid counter and increment coins
-        if(newGridCount > 6 * gridWidth) { // For an 6x6 grid
-            
-            // Reset grid
-            newGridCount = 0;
-            updateForestDisplay(0);
-            tiles = [];
-            
-            // Increment coins
-            newCoins=newCoins+1;
-            updateCoins(newCoins);
-            updateCoinDisplay(newCoins);
-             
-        }
-        let newTiles = addTile(tiles);
+        let newGridCount = tiles.length + 1; // Increment tile count
+        let newLifetimeCount = data.lifetimeTreeCount + 1;
+        let newCoins = getCoins();
+        console.log(newCoins);
 
-        chrome.storage.local.set({lifetimeTreeCount: newLifetimeCount}, function() {
-            saveForest(newTiles);
-            updateForestDisplay(newTiles.length);
-            updateTreeCounterDisplay(newLifetimeCount);
+        // If newGridCount exceeds the total number of tiles the grid can hold
+        if (newGridCount > gridWidth * gridHeight) {
+            newGridCount = 1; // Start again with one new tile
+            tiles = []; // Reset the array holding the tiles
+            // Assume adding a tile for the new grid cycle
+            tiles = addTile(tiles);
+            newCoins += 1; // Increment coins as a reward for filling the grid
+        } else {
+            // Otherwise, continue adding tiles normally
+            tiles = addTile(tiles);
+        }
+
+        // Update persistent storage and UI
+        chrome.storage.local.set({lifetimeTreeCount: newLifetimeCount, coins:newCoins}, function() {
+            saveForest(tiles); // Save the updated state
+            updateForestDisplay(tiles.length); // Redraw the forest
+            updateTreeCounterDisplay(newLifetimeCount); // Update display counters
+            updateCoinDisplay(newCoins);
         });
     });
 }
+
 
 function displayTileCount(count) {
     const tileCountDiv = document.getElementById('tileCount');
@@ -211,13 +211,19 @@ function displayTileCount(count) {
 
 
 function updateForestDisplay(count) {
-    const tiles = loadForest();  // Attempt to load saved tiles
-    if (tiles.length == 0 || count == 0 ) {
-        console.log("no tiles found, rebuilding forest" + count)
+    const tiles = loadForest();  // Load the saved tiles with error handling
+    if (!tiles || tiles.length === 0) {
+        // If no valid forest data is found or it's empty, generate from scratch
         generateAndDisplayTiles(count);
     } else {
-        console.log("found a forest" + tiles)
+        // Display the existing forest and add a new tile if necessary
         displayTiles(tiles);
+        if (count > tiles.length) {
+            // More tiles are needed than are currently displayed
+            addTile(tiles);
+            displayTiles(tiles);  // Re-display tiles with the new addition
+            saveForest(tiles);  // Save the updated forest state
+        }
     }
 }
 
@@ -225,15 +231,19 @@ function generateAndDisplayTiles(count) {
     const forestElement = document.getElementById('isometric-grid');
     forestElement.innerHTML = ''; // Clear existing tiles
     const tiles = [];
+    const positions = generateSpiralPositions(gridWidth, gridHeight);
+
 
     for (let i = 0; i < count; i++) {
-        const row = Math.floor(i / gridWidth);
-        const col = i % gridWidth;
+        const position = positions[i];
+        if (!position) break; // Avoid undefined positions if count exceeds grid size
+        //const row = Math.floor(i / gridWidth);
+        //const col = i % gridWidth;
         const tileType = getRandomItem(tileTypes); // Random tile type
         const tile = {
             type: tileType,
-            row: row,
-            col: col
+            row: position.row,
+            col: position.col
         };
         tiles.push(tile);
         displayTile(tile, forestElement);
@@ -257,6 +267,7 @@ function displayTile(tile, container) {
 }
 
 function addTile(tiles) {
+    const positions = generateSpiralPositions(gridWidth, gridHeight);
     const tileType = getRandomItem(tileTypes);
     let newTile = {};
 
@@ -264,33 +275,64 @@ function addTile(tiles) {
         // If no tiles exist, start with the first position
         newTile = {
             type: tileType,
-            row: 0,
-            col: 0
+            row: positions[0].row,
+            col: positions[0].col
+        };
+    } else if (tiles.length < positions.length) {
+        // Get the next position from the spiral sequence
+        const nextPosition = positions[tiles.length];
+        newTile = {
+            type: tileType,
+            row: nextPosition.row,
+            col: nextPosition.col
         };
     } else {
-        // Get the last tile added to calculate the new tile's position
-        const lastTile = tiles[tiles.length - 1];
-        
-        if (lastTile.col === gridWidth - 1) {
-            // If the last tile was at the end of a row, start a new row
-            newTile = {
-                type: tileType,
-                row: lastTile.row + 1,
-                col: 0
-            };
-        } else {
-            // Otherwise, continue in the same row
-            newTile = {
-                type: tileType,
-                row: lastTile.row,
-                col: lastTile.col + 1
-            };
-        }
+        // All possible positions are filled, manage this scenario
+        //console.log("No more positions available in the grid");
+        return tiles;
     }
-    console.log(newTile.row, newTile.col);
+
     tiles.push(newTile);
     return tiles;
 }
+
+function generateSpiralPositions(gridWidth, gridHeight) {
+    let x = 0;
+    let y = 0;
+    let dx = 0;
+    let dy = -1;
+    let positions = [];
+    let numSteps = gridWidth * gridHeight; // Total number of positions needed
+
+    // Start from the middle of the grid
+    let startX = Math.floor(gridWidth / 2);
+    let startY = Math.floor(gridHeight / 2);
+
+    for (let i = 0; i < numSteps; i++) {
+        if ((x + startX >= 0) && (x + startX <= gridWidth) && (y + startY >= 0) && (y + startY <= gridHeight)) {
+            positions.push({row: y + startY-1, col: x + startX-1});
+        }
+
+        // Check if it's time to turn
+        if ((x === y) || (x < 0 && x === -y) || (x > 0 && x === 1-y)) {
+            let temp = dx;
+            dx = -dy;
+            dy = temp;
+        }
+
+        x += dx;
+        y += dy;
+    }
+
+    if (positions.length < numSteps) {
+        // If not enough positions are generated (due to boundary miscalculation), log and adjust manually
+        console.error("Spiral generation miscalculation. Expected: " + numSteps + ", Generated: " + positions.length);
+    }
+
+    return positions;
+}
+
+
 
 // UTILITIES 
 
@@ -323,7 +365,15 @@ function fetchAndDisplaySVG(svgFilePath, containerElement, width, height, row, c
 }
 
 function updateTreeCounterDisplay(lifetimeCount) {
-    document.getElementById('treeCounter').textContent = `${lifetimeCount}`; // Show lifetime count
+    const treeCounterElement = document.getElementById('treeCounter');
+
+    if (lifetimeCount !== undefined) {
+        treeCounterElement.textContent = `${lifetimeCount}`; // Show lifetime count
+    } else {
+        chrome.storage.local.get({lifetimeTreeCount: 0}, function(result){
+            treeCounterElement.textContent = `${result.lifetimeTreeCount}`; // Show lifetime count from storage
+        });
+    }
 }
 
 // SHOP AND MONEY HANDLING
@@ -428,8 +478,7 @@ function motherlode(){
 
 // Function to save the forest state
 function saveForest(tiles) {
-    localStorage.setItem('forestState', JSON.stringify(tiles));
-    console.log("forest saved !")
+    localStorage.setItem('forestState', JSON.stringify(tiles));    
 }
 
 function resetForest() {
@@ -439,8 +488,21 @@ function resetForest() {
 
 // Function to load the forest state
 function loadForest() {
-    const savedTiles = localStorage.getItem('forestState');
-    return savedTiles ? JSON.parse(savedTiles) : null;
+    try {
+        const savedTiles = localStorage.getItem('forestState');
+        if (!savedTiles) {
+            return [];  // Return empty array if nothing is saved
+        }
+        const tiles = JSON.parse(savedTiles);
+        if (Array.isArray(tiles) && tiles.length > 0) {
+            return tiles;
+        } else {
+            throw new Error("Stored forest is not a valid array or it's empty");
+        }
+    } catch (error) {
+        console.error("Error loading forest:", error);
+        return [];  // Return an empty array in case of any error
+    }
 }
 
 function toggleDebugMode() {
@@ -477,14 +539,13 @@ function updateDebugVisibility() {
     });
 }
 
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+function toggleVisibility(elementId, visible) {
+    document.getElementById(elementId).style.display = visible ? 'flex' : 'none';
+}
+
+function handleRuntimeMessage(request, sender, sendResponse) {
     if (request.action === "newTab") {
         newTabHandler();
         incrementTileCount();
     }
-});
-
-chrome.tabs.onCreated.addListener(function() {
-    console.log("update triggered")
-    displayTileCount()
-});
+}

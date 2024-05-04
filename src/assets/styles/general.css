@@ -49,16 +49,15 @@ a:active {
     font-style: normal;
 }
 
-#forest {
+#isometric-grid {
     position: relative;
-    width: calc(150px * 6);
+    width: calc(150px * 5);
     /* Adjust based on the number of tiles and their width */
     height: 800px;
     /* Adjust based on your needs and the grid's size */
     margin: auto;
+    margin-top:36px;
     /* Center the grid horizontally */
-    transform: scale(0.5);
-    /* Optional: scale down if the grid is too large */
     transform-origin: 50% 0%;
     /* Adjust scaling origin if needed */
 }

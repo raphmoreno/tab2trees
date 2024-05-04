@@ -1,0 +1,12 @@
+{
+  "devDependencies": {
+    "@types/chrome": "^0.0.267",
+    "@types/node": "^20.12.8",
+    "parcel-bundler": "^1.12.5",
+    "typescript": "^5.4.5"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "parcel public/newtab.html"
+  }
+}

@@ -5,23 +5,23 @@
     "version": "1.3.1",
     "permissions": ["storage"],
     "background": {
-      "service_worker": "background.js"
+      "service_worker": "src/background/background.js"
     },
     "action": {
-      "default_popup": "popup.html",
+      "default_popup": "public/popup.html",
       "default_icon": {
-        "16": "images/tree-16.png",
-        "48": "images/tree-48.png",
-        "128": "images/tree-128.png"
+        "16": "src/assets/images/tree-16.png",
+        "48": "src/assets/images/tree-48.png",
+        "128": "src/assets/images/tree-128.png"
       }
     },
     "chrome_url_overrides": {
-      "newtab": "newtab.html"
+      "newtab": "public/newtab.html"
     },
     "icons": {
-      "16": "images/tree-16.png",
-      "48": "images/tree-48.png",
-      "128": "images/tree-128.png"
+      "16": "src/assets/images/tree-16.png",
+      "48": "src/assets/images/tree-48.png",
+      "128": "src/assets/images/tree-128.png"
     }
     ,
     "content_security_policy": {

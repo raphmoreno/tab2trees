@@ -6,7 +6,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Jersey+10&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="ressources/general.css">
+    <link rel="stylesheet" href="../src/assets/styles/general.css">
     <title>🌲🌳 New Tab 🌲🌳</title>
 </head>
 
@@ -18,13 +18,13 @@
     <div id="isometric-grid"></div>
     <div id="treeInfo">
         <span class="treeIcon">
-            <img src="images/tree.png" alt="coins" height="32" width="32" />
+            <img src="../src/assets/images/tree.png" alt="coins" height="32" width="32" />
         </span>
         <span id="treeCounter">Trees: 0</span>
     </div>
     <div id="coinInfo">
         <span class="coinIcon">
-            <img src="images/coin.png" alt="coins" height="32" width="32" />
+            <img src="../src/assets/images/coin.png" alt="coins" height="32" width="32" />
         </span>
         <span id="coinCounter">Coins: 0</span>
     </div>
@@ -54,7 +54,12 @@
         <a href="https://patreon.com/tab2trees"> Donate </a>
     </button>
 
-    <script src="newtab.js"></script>
+    <script type="module" src="app.js"></script>
+    <script type="module" src="weather.js"></script>
+    <script type="module" src="utils.js"></script>
+    <script type="module" src="grid.js"></script>
+    <script type="module" src="shop.js"></script>
+    <script type="module" src="config.js"></script>
 
     <div id="toast-container"
         style="position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); z-index: 1000;"></div>

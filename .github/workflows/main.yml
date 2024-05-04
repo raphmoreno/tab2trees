@@ -13,9 +13,22 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
+    - name: Install jq
+      run: sudo apt-get install jq
+
+    - name: Increment Version Number
+      run: |
+        echo "Incrementing version number..."
+        current_version=$(jq -r '.version' manifest.json)
+        IFS='.' read -r -a version_parts <<< "$current_version"
+        ((version_parts[2]++))
+        new_version="${version_parts[0]}.${version_parts[1]}.${version_parts[2]}"
+        jq ".version = \"$new_version\"" manifest.json > temp.json && mv temp.json manifest.json
+        echo "Updated version: $new_version"
+
     - name: Package Extension
       run: |
-        zip -r tab2trees.zip ./* -x "*.git*" -x "backend/*" -x "*.md"
+        zip -r tab2trees.zip ./* -x "*.git*" -x "backend/*" -x "*.md" -x "dist/" -x "package-lock.json" -x "package.json" -x "tsconfig.json" -x "node_modules/"
 
     - name: Create Release
       id: create_release

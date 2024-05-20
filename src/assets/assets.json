@@ -1,14 +1,30 @@
 [
     {
-        "id": "tree-1",
-        "pathToAsset": "SVG/tree-1.svg",
-        "baseWidth": 25,
-        "baseHeight": 14
+        "type": "pine",
+        "size": { "width": 50, "height": 50 },
+        "groundWidth": 30,
+        "groundHeight": 50,
+        "svgPath": "../src/assets/svg/trees/pine.svg"
     },
     {
-        "id": "tree-2",
-        "pathToAsset": "SVG/tree-2.svg",
-        "baseWidth": 25,
-        "baseHeight": 14
+        "type": "oak-autumn",
+        "size": { "width": 50, "height": 50 },
+        "groundWidth": 30,
+        "groundHeight": 40,
+        "svgPath": "../src/assets/svg/trees/oak-autumn.svg"
+    },
+    {
+        "type": "cherry-summer",
+        "size": { "width": 50, "height": 50 },
+        "groundWidth": 15,
+        "groundHeight": 15,
+        "svgPath": "../src/assets/svg/trees/cherry-summer.svg"
+    },
+    {
+        "type": "cherry-spring",
+        "size": { "width": 50, "height": 50 },
+        "groundWidth": 10,
+        "groundHeight": 15,
+        "svgPath": "../src/assets/svg/trees/cherry-spring.svg"
     }
 ]

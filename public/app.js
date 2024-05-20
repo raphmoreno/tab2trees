@@ -14,7 +14,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     return true; // Important for asynchronous sendResponse
 });
 document.addEventListener('DOMContentLoaded', initializeApp);
-const tileTypes = ['forest-1', 'forest-2', 'forest-autumn'];
 let forestInitialized = false; // Flag to check if the forest has been initialized
 const coinCount = getCoins();
 function initializeApp() {
@@ -27,10 +26,6 @@ function initializeApp() {
     updateCoinDisplay(coinCount);
 }
 ;
-function buildTileSet() {
-    const tileSet = [];
-    return tileSet;
-}
 // Build click listeners
 function buildListeners() {
     console.log("all good");

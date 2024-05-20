@@ -30,13 +30,6 @@ function initializeApp() {
     updateTreeCounterDisplay();
     updateCoinDisplay(coinCount);
 };
-
-function buildTileSet() {
-    const tileSet = [];
-
-    return tileSet
-}
-
 // Build click listeners
 
 function buildListeners() {

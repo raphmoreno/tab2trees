@@ -62,6 +62,19 @@ a:active {
     /* Adjust scaling origin if needed */
 }
 
+#canvas {
+    position: relative;
+    width: calc(150px * 5);
+    /* Adjust based on the number of tiles and their width */
+    height: 800px;
+    /* Adjust based on your needs and the grid's size */
+    margin: auto;
+    margin-top:36px;
+    /* Center the grid horizontally */
+    transform-origin: 50% 0%;
+    /* Adjust scaling origin if needed */
+}
+
 #treeInfo,
 #coinInfo,
 #resetButton,

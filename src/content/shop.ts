@@ -12,6 +12,8 @@ const shopItems: ShopItem[] = [
     { id: 2, name: "Pine Tree", type: "tree", cost: 20, img: "../src/assets/svg/pine.svg" },
     { id: 3, name: "Cherry Blossom (spring)", type: "tree", cost: 50, img: "../src/assets/svg/cherry-spring.svg" },
     { id: 4, name: "Cherry Blossom (summer)", type: "option", cost: 100, img: "../src/assets/svg/cherry-summer.svg" },
+    { id: 5, name: "Jungle", type: "environment", cost: 200, img: "../src/assets/svg/basetiles/jungle/shop.svg" },
+    { id: 6, name: "Savanah", type: "environment", cost: 200, img: "../src/assets/svg/basetiles/savannah/shop.svg" },
 ];
 
 // SHOP AND MONEY HANDLING

@@ -122,8 +122,3 @@ export function addTile(tiles: Tile[]): Tile[] {
     }
     return tiles;
 }
-
-export function resetForest(): void {
-    localStorage.removeItem('forestState');
-    updateForestDisplay(0);
-}

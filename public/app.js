@@ -28,7 +28,6 @@ function initializeApp() {
 ;
 // Build click listeners
 function buildListeners() {
-    console.log("all good");
     safeAddEventListener('resetButton', 'click', resetForest);
     safeAddEventListener('shopButton', 'click', () => {
         toggleVisibility('shopOverlay', true);

@@ -87,14 +87,14 @@ export function toggleVisibility(elementId: string, visible: boolean): void {
     document.getElementById(elementId)!.style.display = visible ? 'flex' : 'none';
 }
 
-export function displayTileCount(count?:string) {
+export function displayTabCount(count?:string) {
     const tileCountDiv = document.getElementById('tileCount');
     if (tileCountDiv){
         if (count !== undefined && typeof count === 'number') {
             // Display the count directly if it's provided
             let treesplanted = Math.floor(count / 1000);
             let tabCountdown = 1000 - count % 1000;
-            tileCountDiv.innerHTML = `<p>Total trees planted: ${treesplanted} 🚀 New tree planted in ${tabCountdown} tabs</p>`
+            tileCountDiv.innerHTML = `<p>Total trees planted: ${treesplanted} 🌳 New tree planted in ${tabCountdown} tabs</p>`
         } else {
             // Make a GET request to fetch the count if no count is provided
             fetch('http://tab.sora-mno.link/api/tiles', { method: 'GET' })
@@ -119,4 +119,36 @@ export function safeAddEventListener(selector: string, event: string, handler: E
     } else {
         console.error(`Element with selector "${selector}" not found.`);
     }
+}
+
+export function clearStorageData(): void {
+    chrome.storage.local.remove(['forestState', 'gridState'], function() {
+        console.log('forestState and gridState have been cleared from Chrome storage.');
+    });
+}
+
+(window as any).clearStorageData = clearStorageData;
+
+export function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
+export function storeUUID(uuid: string) {
+    chrome.storage.local.set({userId: uuid}, function() {
+        console.log('User ID is set to ' + uuid);
+    });
+}
+
+export function initializeUserID() {
+    chrome.storage.local.get('userId', function(result) {
+        if (result.userId) {
+            console.log('Existing User ID found:', result.userId);
+        } else {
+            const uuid = generateUUID();
+            storeUUID(uuid);
+        }
+    });
 }

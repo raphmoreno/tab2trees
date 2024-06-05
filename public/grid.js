@@ -98,8 +98,4 @@ export function addTile(tiles) {
     }
     return tiles;
 }
-export function resetForest() {
-    localStorage.removeItem('forestState');
-    updateForestDisplay(0);
-}
 //# sourceMappingURL=grid.js.map

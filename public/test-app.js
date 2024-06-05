@@ -7,7 +7,24 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+import { updateDebugVisibility, updateTreeCounterDisplay, clearStorageData, toggleVisibility, displayTabCount, safeAddEventListener, initializeUserID } from './utils.js';
+import { getLocation } from './weather.js';
+import { updateForestDisplay } from './grid.js';
+import { motherlode, populateShop, updateCoinDisplay, getCoins } from './shop.js';
 import { config } from './config.js';
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+    if (request.action === "newTab") {
+        // Handle the new tab action
+        console.log("New tab detected");
+        sendResponse({ status: "Received" });
+        newTabHandler();
+        incrementTabCount();
+    }
+    return true; // Important for asynchronous sendResponse
+});
+let forestInitialized = false; // Flag to check if the forest has been initialized
+const coinCount = getCoins();
+const assets = loadAssets();
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         initializeApp().then(() => {
@@ -17,16 +34,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }, 50);
 });
-function loadAssets() {
-    return __awaiter(this, void 0, void 0, function* () {
-        const response = yield fetch('../src/assets/assets.json');
-        if (!response.ok) {
-            throw new Error('Failed to fetch assets');
-        }
-        return response.json();
-    });
-}
-const assets = loadAssets();
 // Grid dimensions based on the canvas size
 const cellWidth = 30;
 const cellHeight = 20;
@@ -36,20 +43,26 @@ const placementStrategy = "random";
 const defaultEnvironment = {
     type: "forest",
     size: { width: 750, height: 500 },
-    svgPath: "../src/assets/svg/basetiles/forest/forest-1.svg"
+    svgPath: "../src/assets/svg/basetiles/forest/large-forest.svg"
 };
 function initializeApp() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const canvas = document.getElementById('canvas');
+            getLocation();
+            initializeUserID();
+            displayTabCount();
             let svgElement = yield loadBackground(canvas, defaultEnvironment);
             if (!svgElement) {
                 throw new Error("SVG element could not be loaded.");
             }
             const grid = createIsometricGrid(canvasWidth, canvasHeight, cellWidth, cellHeight); // Example sizes
-            console.log(grid);
+            initializeAppState();
             buildListeners(grid);
-            markNoGoZones(grid, svgElement, '[data-nogo="true"]');
+            updateDebugVisibility(config.isDebugMode);
+            updateTreeCounterDisplay();
+            updateCoinDisplay(coinCount);
+            forestInitialized = true;
         }
         catch (error) {
             console.error("Failed to initialize the application:", error);
@@ -59,11 +72,44 @@ function initializeApp() {
 function buildListeners(grid) {
     var _a;
     const SVGCanvas = document.getElementById('svgBackground');
-    if (SVGCanvas) {
+    const appSwitcherButton = document.getElementById('appSwitcherButton');
+    const appSwitcherMenu = document.getElementById('appSwitcherMenu');
+    safeAddEventListener('resetButton', 'click', clearStorageData);
+    safeAddEventListener('shopButton', 'click', () => {
+        toggleVisibility('shopOverlay', true);
+        populateShop();
+    });
+    safeAddEventListener('overlay-cross', 'click', () => toggleVisibility('shopOverlay', false));
+    safeAddEventListener('motherlodeButton', 'click', motherlode);
+    window.clearStorageData = clearStorageData;
+    chrome.tabs.onCreated.addListener(function () {
+        displayTabCount;
+    });
+    // Listener for spawning random tree
+    if (SVGCanvas && appSwitcherButton && appSwitcherMenu) {
         (_a = document.getElementById('test-button')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', () => {
             spawnRandomTree(grid, SVGCanvas).catch(console.error);
         });
+        // Listener for the app switcher
+        appSwitcherButton.addEventListener('click', function () {
+            // Toggle the display of the app switcher menu
+            if (appSwitcherMenu.style.display === 'none') {
+                appSwitcherMenu.style.display = 'block';
+            }
+            else {
+                appSwitcherMenu.style.display = 'none';
+            }
+        });
     }
+}
+function loadAssets() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const response = yield fetch('../src/assets/assets.json');
+        if (!response.ok) {
+            throw new Error('Failed to fetch assets');
+        }
+        return response.json();
+    });
 }
 function createIsometricGrid(canvasWidth, canvasHeight, cellWidth, cellHeight) {
     const numRows = Math.floor(canvasHeight / cellHeight);
@@ -109,6 +155,7 @@ function convertToGridCoordinates(rect, svgElement, offsetX, offsetY) {
     };
 }
 function spawnAsset(asset, grid, strategy, canvas) {
+    console.log("spawning a tree");
     const positions = findAvailablePositions(asset, grid);
     //console.log(positions);
     if (positions.length > 0) {
@@ -117,7 +164,9 @@ function spawnAsset(asset, grid, strategy, canvas) {
             positions[0]; // Sequential selection
         renderAssetOnPosition(asset, position, canvas);
         markGridCells(asset, position, grid, false);
+        return { asset, placement: position };
     }
+    return null;
 }
 function findAvailablePositions(asset, grid) {
     let availablePositions = [];
@@ -166,8 +215,8 @@ function renderAssetOnPosition(asset, placement, canvas) {
         .catch(error => console.error('Error loading SVG content:', error));
 }
 function markGridCells(asset, startCell, grid, available) {
-    let assetGridWidth = Math.ceil(asset.groundWidth / 22.5);
-    let assetGridHeight = Math.ceil(asset.groundHeight / 15);
+    let assetGridWidth = Math.ceil(asset.groundWidth / cellWidth);
+    let assetGridHeight = Math.ceil(asset.groundHeight / cellHeight);
     for (let y = 0; y < assetGridHeight; y++) {
         for (let x = 0; x < assetGridWidth; x++) {
             let targetX = startCell.x + x;
@@ -227,6 +276,99 @@ function switchEnvironment(canvas, newEnvironment) {
     return __awaiter(this, void 0, void 0, function* () {
         yield loadBackground(canvas, newEnvironment);
         // Additional logic can be added here if needed, e.g., saving user preference
+    });
+}
+function incrementTabCount() {
+    fetch('http://tab.sora-mno.link/api/add-tree', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ count: 1 }) // Increment by one each time a new tab is opened
+    })
+        .then(response => response.json())
+        .then(data => {
+        displayTabCount(data.globalTileCount);
+    })
+        .catch(error => {
+        console.error('Error updating tile count:', error);
+        displayTabCount('Error retrieving data');
+    });
+}
+function newTabHandler() {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const { grid, trees } = yield loadAppState();
+            const assetType = selectRandomTree();
+            const newTree = (yield assets).find(asset => asset.type === assetType);
+            const SVGCanvas = document.getElementById('svgBackground');
+            const assetPlacement = spawnAsset(newTree, grid, placementStrategy, SVGCanvas);
+            if (assetPlacement != null) {
+                trees.push(assetPlacement);
+                let newLifetimeCount = trees.length;
+                let newCoins = getCoins() + calculateCoinIncrement(trees.length);
+                // Save the updated state
+                chrome.storage.local.set({
+                    forestState: JSON.stringify(trees), // Save updated trees
+                    gridState: JSON.stringify(grid), // Save updated grid
+                    lifetimeTreeCount: newLifetimeCount,
+                    coins: newCoins
+                }, () => {
+                    updateForestDisplay(trees.length);
+                    updateTreeCounterDisplay(newLifetimeCount);
+                    updateCoinDisplay(newCoins);
+                    console.log("New tree planted and forest updated.");
+                });
+            }
+        }
+        catch (error) {
+            console.error("Error handling new tab:", error);
+        }
+    });
+}
+function loadGrid() {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Placeholder for grid loading logic
+        const response = yield chrome.storage.local.get('gridState');
+        return response.gridState ? JSON.parse(response.gridState) : createInitialGrid(); // Create or reset grid if not found
+    });
+}
+function createInitialGrid() {
+    return createIsometricGrid(canvasWidth, canvasHeight, cellWidth, cellHeight);
+}
+function calculateCoinIncrement(tabs) {
+    // Increase coin count every 10 trees planted
+    return tabs % 10 === 0 ? 1 : 0;
+}
+function loadAppState() {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Load the combined state from local storage
+        return new Promise((resolve, reject) => {
+            chrome.storage.local.get(['gridState', 'forestState'], function (result) {
+                if (result.gridState && result.forestState) {
+                    const grid = JSON.parse(result.gridState);
+                    const trees = JSON.parse(result.forestState);
+                    resolve({ grid, trees });
+                }
+                else {
+                    // If no data is found, initialize defaults
+                    const grid = createInitialGrid();
+                    const trees = [];
+                    resolve({ grid, trees });
+                }
+            });
+        });
+    });
+}
+function initializeAppState() {
+    loadAppState().then(({ grid, trees }) => {
+        const canvas = document.getElementById('svgBackground');
+        trees.forEach(tree => {
+            renderAssetOnPosition(tree.asset, tree.placement, canvas);
+        });
+        updateTreeCounterDisplay(trees.length);
+    }).catch(error => {
+        console.error("Failed to load application state:", error);
     });
 }
 //# sourceMappingURL=test-app.js.map

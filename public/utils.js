@@ -73,14 +73,14 @@ export function updateDebugVisibility(isDebugMode) {
 export function toggleVisibility(elementId, visible) {
     document.getElementById(elementId).style.display = visible ? 'flex' : 'none';
 }
-export function displayTileCount(count) {
+export function displayTabCount(count) {
     const tileCountDiv = document.getElementById('tileCount');
     if (tileCountDiv) {
         if (count !== undefined && typeof count === 'number') {
             // Display the count directly if it's provided
             let treesplanted = Math.floor(count / 1000);
             let tabCountdown = 1000 - count % 1000;
-            tileCountDiv.innerHTML = `<p>Total trees planted: ${treesplanted} 🚀 New tree planted in ${tabCountdown} tabs</p>`;
+            tileCountDiv.innerHTML = `<p>Total trees planted: ${treesplanted} 🌳 New tree planted in ${tabCountdown} tabs</p>`;
         }
         else {
             // Make a GET request to fetch the count if no count is provided
@@ -106,5 +106,33 @@ export function safeAddEventListener(selector, event, handler) {
     else {
         console.error(`Element with selector "${selector}" not found.`);
     }
+}
+export function clearStorageData() {
+    chrome.storage.local.remove(['forestState', 'gridState'], function () {
+        console.log('forestState and gridState have been cleared from Chrome storage.');
+    });
+}
+window.clearStorageData = clearStorageData;
+export function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+export function storeUUID(uuid) {
+    chrome.storage.local.set({ userId: uuid }, function () {
+        console.log('User ID is set to ' + uuid);
+    });
+}
+export function initializeUserID() {
+    chrome.storage.local.get('userId', function (result) {
+        if (result.userId) {
+            console.log('Existing User ID found:', result.userId);
+        }
+        else {
+            const uuid = generateUUID();
+            storeUUID(uuid);
+        }
+    });
 }
 //# sourceMappingURL=utils.js.map

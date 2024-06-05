@@ -1,0 +1,532 @@
+body {
+    flex-direction: column;
+    background-color: #A2D8C0;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    height: 100vh;
+    /* Ensure full viewport height coverage */
+    width: 100%;
+    font-family: "Jersey 10";
+    font-size: 18px;
+    transition: background-color 2s ease-in-out;
+
+}
+
+body * {
+    font-family: "Jersey 10";
+    font-size: 18px;
+}
+
+p {
+    margin: 0 12px;
+}
+
+.hidden{
+    display:none !important;
+}
+
+a:link {
+    text-decoration: none;
+    color: black
+}
+
+a:visited {
+    text-decoration: none;
+    color: black
+}
+
+a:hover {
+    text-decoration: none;
+    color: black
+}
+
+a:active {
+    text-decoration: none;
+    color: black
+}
+
+.jersey-10 {
+    font-family: "Jersey 10", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
+header {
+    display: flex;
+    height: 120px;
+    width: 100%;
+    justify-content: space-between;
+    position: relative;
+}
+
+.header__left {
+    margin-top:24px;
+    margin-left:24px;
+    display: flex;
+    flex-direction: column;
+    width: 20%;
+}
+
+.header__center {
+    margin:auto auto;
+    display: flex;
+    justify-content: space-evenly;
+    width: 65%;
+}
+
+.header__right {
+    margin-top:24px;
+    margin-right:24px;
+    display: flex;
+    flex-direction: column;
+    width: 15%;
+}
+
+#additional-info {
+    padding: 6px;
+    font-size: 16px;
+    border: 1px black solid;
+    width: fit-content;
+    border-radius: 8px;
+    background: rgb(255, 255, 255, 0.3);
+    margin-top: 4px;
+}
+
+.tooltip-info {
+    display: none;
+    font-size: 14px;
+    position: absolute;
+    background-color: #f9f9f9;
+    border: 1px solid #d3d3d3;
+    border-radius: 5px;
+    padding: 10px;
+    z-index: 1;
+    width: 280px;
+    top: 100%;
+    left: 24px;
+    margin-top: 20px;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+}
+
+#additional-info:hover .tooltip-info {
+    display: block; /* Show the tooltip on hover */
+}
+
+#tileCount p {
+    font-size: 16px;
+    margin: 0;
+}
+
+#resetButton {
+    top: 20px;
+    right: 20px;
+    padding: 10px;
+    cursor: pointer;
+}
+
+#motherlodeButton {
+    top: 70px;
+    right: 20px;
+    padding: 10px;
+    cursor: pointer;
+}
+
+#title {
+    font-size: 24px;
+    text-align: left;
+}
+
+#description {
+    font-size: 16px;
+    width:300px;
+    text-align: left;
+}
+
+/* Search */ 
+
+/* Overall styling for the search container */
+.search-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top:36px;    
+}
+
+.search-container form{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Styling for the input field */
+.search-input {
+    width: 600px; /* Adjust width as needed */
+    padding: 10px 20px;
+    font-size: 16px; /* Adjust font size as needed */
+    border: 2px solid #111; /* Light grey border */
+    border-radius: 24px; /* Rounded corners */
+    outline: none; /* Removes the default focus highlight */
+    transition: border-color 0.3s; /* Smooth transition for focus */
+    background-color: rgb(255, 255, 255, 0.10);
+}
+
+/* Hover and focus states for the input field */
+.search-input:hover,
+.search-input:focus {
+    border-color: #aaa; /* Darker border on hover/focus */
+}
+
+/* Styling for the search button */
+.search-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 24px; /* Rounded corners */
+    cursor: pointer;
+    margin-left: 10px; /* Space between input field and button */
+    transition: background-color 0.3s; /* Smooth background color transition */
+    border: 2px solid #111; /* Light grey border */
+    background-color: rgb(255, 255, 255, 0.10);
+}
+
+.app-switcher-icon {
+    cursor: pointer;
+    position: absolute;
+    top: 24px;
+    right: 24px;
+}
+
+.app-switcher:hover {
+    background-color: #e0e0e0; /* Light grey background on hover */
+}
+
+.google_appswitch {
+    fill: currentColor; /* Ensures SVG inherits the color of the parent */
+    width: 24px;
+    height: 24px;
+}
+
+.app-switcher-menu {
+    position: absolute;
+    top: 50px; /* Adjust based on your layout */
+    right: 10px;
+    width: 240px;
+    background: rgb(255,255,255,0.8);
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    padding: 10px;
+}
+
+.app-switcher-menu img {
+    width: 24px; /* Adjust icon size */
+    height: 24px;
+}
+
+.app-switcher-menu ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    justify-content: space-evenly;
+    justify-items: center;
+}
+
+.app-switcher-menu li {
+    display: flex;
+    align-items: center;
+}
+
+.app-switcher-menu li a {
+    text-decoration: none;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.app-switcher-menu li img {
+    width: 24px;
+    height: auto;
+}
+
+/* Main Content */ 
+
+#isometric-grid {
+    position: relative;
+    display:none;
+    width: calc(150px * 5);
+    /* Adjust based on the number of tiles and their width */
+    height: 800px;
+    /* Adjust based on your needs and the grid's size */
+    margin: auto;
+    margin-top:36px;
+    /* Center the grid horizontally */
+    transform-origin: 50% 0%;
+    /* Adjust scaling origin if needed */
+}
+
+#canvas {
+    position: relative;
+    width: calc(150px * 5);
+    /* Adjust based on the number of tiles and their width */
+    height: 800px;
+    /* Adjust based on your needs and the grid's size */
+    margin: auto;
+    margin-top:36px;
+    /* Center the grid horizontally */
+    transform-origin: 50% 0%;
+    /* Adjust scaling origin if needed */
+}
+
+#svgBackground > svg {
+    position: absolute;
+    top: 70px;
+    right: -60px;
+}
+
+#treeInfo,
+#coinInfo,
+#resetButton,
+#motherlodeButton {
+    position: fixed;
+    z-index: 10;
+    /* Ensure these elements stay above the grid */
+}
+
+#treeInfo {
+    bottom: 80px;
+    left: 20px;
+}
+
+#coinInfo {
+    bottom: 120px;
+    left: 20px;
+}
+
+#treeInfo,
+#coinInfo {
+    display: flex;
+    align-items: center;
+}
+
+.coinIcon,
+.treeIcon {
+    margin-right: 10px;
+    width: 32px;
+    height: 32px;
+}
+
+.shopCost-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+
+#isometric-grid {
+    position: relative;
+}
+
+.isometric-tile {
+    position: absolute;
+    width: 150px;
+    /* Adjust based on SVG size */
+    height: 100px;
+    /* Adjust based on SVG size */
+    /* No margin adjustment needed as positioning is absolute */
+}
+
+
+
+
+#weatherInfo {
+    position: absolute;
+    bottom: 20px;
+}
+
+#shopOverlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.75);
+    align-items: center;
+    justify-content: center;
+    z-index: 999
+}
+
+#shopGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    max-height: 80vh;
+    width: 660px;
+    overflow-y: auto;
+    padding: 20px;
+    box-sizing: border-box;
+    justify-content: center;
+    overflow-y: auto;
+    scrollbar-width: none; /* For Firefox */
+}
+#shopGrid::-webkit-scrollbar {
+    display: none; /* For Chrome, Safari, and Opera */
+}
+
+#shopGrid div {
+    margin: 10px;
+    text-align: center;
+    width: 150px;
+}
+
+
+
+.shop-item {
+    text-align: center;
+    padding: 10px;
+    background: rgb(255, 255, 255, .7);
+    border: 1px solid #ccc;
+    border-radius: 10px;
+}
+
+.shop-item img {
+    width: 100%;
+    height: auto;
+    max-height: 150px;
+    object-fit: contain;
+}
+
+#overlay-cross {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    cursor: pointer;
+}
+
+/* CSS */
+.button-main {
+    align-items: center;
+    font-family: "Jersey 10";
+    font-size: 18px;
+    background-color: #fee6e3;
+    border: 2px solid #111;
+    border-radius: 8px;
+    box-sizing: border-box;
+    color: #111;
+    cursor: pointer;
+    display: flex;
+    height: 36px;
+    justify-content: center;
+    line-height: 18px;
+    max-width: 100%;
+    padding: 0 20px;
+    position: relative;
+    text-align: center;
+    text-decoration: none;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+}
+
+.button-main:after {
+    background-color: #111;
+    border-radius: 8px;
+    content: "";
+    display: block;
+    height: 36px;
+    left: 0;
+    width: 100%;
+    position: absolute;
+    top: -2px;
+    transform: translate(6px, 6px);
+    transition: transform .2s ease-out;
+    z-index: -1;
+}
+
+.button-main:hover:after {
+    transform: translate(0, 0);
+}
+
+.button-main:active {
+    background-color: #ffdeda;
+    outline: 0;
+}
+
+.button-main:hover {
+    outline: 0;
+}
+
+@media (min-width: 768px) {
+    .button-main {
+        padding: 0 40px;
+    }
+}
+
+.button-background-move {
+    font-size: 14px;
+    font-weight: 200;
+    letter-spacing: 1px;
+    padding: 5px 18px 5px;
+    outline: 0;
+    border: 1px solid black;
+    cursor: pointer;
+    position: relative;
+    background-color: rgba(0, 0, 0, 0);
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+}
+
+.button-background-move:after {
+    content: "";
+    background-color: olive;
+    width: 100%;
+    z-index: -1;
+    position: absolute;
+    height: 100%;
+    top: 4px;
+    left: 4px;
+    transition: 0.2s;
+}
+
+.button-background-move:hover:after {
+    top: 0px;
+    left: 0px;
+}
+
+@media (min-width: 768px) {
+    .button-background-move {
+        padding: 5px 18px 5px
+    }
+}
+
+.toast {
+    background-color: #333;
+    color: white;
+    padding: 16px;
+    margin: 16px;
+    border-radius: 4px;
+    opacity: 0;
+    transition: opacity 0.5s, bottom 0.5s ease-in-out;
+    position: relative;
+    bottom: -100px;
+    z-index: 99;
+    /* Start from below the view */
+}
+
+.toast-show {
+    opacity: 1;
+    bottom: 30px;
+    /* Move it 30px up */
+}
+

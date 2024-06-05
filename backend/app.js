@@ -8,6 +8,29 @@ const path = require('path');
 
 const redis = require('redis');
 
+const AWS = require('aws-sdk');
+
+// Set the region; this is the only configuration needed if IAM roles are used
+AWS.config.update({
+  region: 'eu-west-3' // or your DynamoDB region
+});
+
+// DynamoDB example usage
+const dynamoDB = new AWS.DynamoDB.DocumentClient();
+
+async function getItemsFromDynamoDB() {
+  const params = {
+    TableName: 'UserStats'
+  };
+
+  try {
+    const data = await dynamoDB.scan(params).promise();
+    return(data.Items);
+  } catch (err) {
+    return("Error accessing DynamoDB:", err);
+  }
+}
+
 // Create a client and connect to Redis server running on localhost:6379
 // Create a client and connect to Redis server
 const client = redis.createClient({
@@ -87,6 +110,15 @@ app.get('/api/tiles', async (req, res) => {
         res.json({ globalTileCount: parseInt(globalTileCount) });
     } catch (error) {
         console.error('Redis Error:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+app.get('/api/userStats', async (req, res) => {
+    try {
+        res.json( getItemsFromDynamoDB());
+    } catch (error) {
+        console.error('Error getting stats:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });

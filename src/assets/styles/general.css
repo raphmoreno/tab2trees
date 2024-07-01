@@ -280,7 +280,6 @@ header {
     height: 800px;
     /* Adjust based on your needs and the grid's size */
     margin: auto;
-    margin-top:36px;
     /* Center the grid horizontally */
     transform-origin: 50% 0%;
     /* Adjust scaling origin if needed */

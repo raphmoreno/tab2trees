@@ -76,12 +76,28 @@ const tileLimiter = rateLimit({
     }
 });
 
+async function updateTabCount(userId) {
+    const params = {
+        TableName: 'UserStats',
+        Key: { user_id: userId },
+        UpdateExpression: 'SET tab_count = if_not_exists(tab_count, :start) + :inc',
+        ExpressionAttributeValues: {
+            ':inc': 1,
+            ':start': 0
+        },
+        ReturnValues: 'UPDATED_NEW'
+    };
+    return dynamoDb.update(params).promise();
+}
+
 app.use(cors());  // Place this before your routes are defined
 
 // POST handler to increment and get the global tile count
-app.post('/api/add-tree', tileLimiter, async (req, res) => {
+app.post('/api/add-tab', tileLimiter, async (req, res) => {
+    const { userId } = req.body.userId;
     const count = parseInt(req.body.count || 1); // Default to 1 if no count is specified
     try {
+        await updateTabCount(userId);
         const newCount = await client.incrBy('globalTileCount', count); // Redis increments the count
         res.json({ globalTileCount: newCount });
     } catch (error) {
@@ -89,6 +105,31 @@ app.post('/api/add-tree', tileLimiter, async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
+app.post('/updateCoins', tileLimiter, async (req, res) => {
+    const { userId, coinChange } = req.body;
+    try {
+        await addCoins(userId, coinChange);
+        res.json({ message: 'Coins added successfully.' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+async function addCoins(userId, coinsToAdd) {
+    const params = {
+        TableName: 'UserStats',
+        Key: { user_id: userId },
+        UpdateExpression: 'SET coin_count = if_not_exists(coin_count, :start) + :inc',
+        ExpressionAttributeValues: {
+            ':inc': coinsToAdd,
+            ':start': 0
+        },
+        ReturnValues: 'UPDATED_NEW'
+    };
+    return dynamoDb.update(params).promise();
+}
 
 // GET handler to view the global tile count
 app.get('/api/tiles', async (req, res) => {

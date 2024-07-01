@@ -121,18 +121,63 @@ export function generateUUID() {
 }
 export function storeUUID(uuid) {
     chrome.storage.local.set({ userId: uuid }, function () {
-        console.log('User ID is set to ' + uuid);
+        //console.log('User ID is set to ' + uuid);
     });
 }
 export function initializeUserID() {
     chrome.storage.local.get('userId', function (result) {
         if (result.userId) {
-            console.log('Existing User ID found:', result.userId);
+            //console.log('Existing User ID found:', result.userId);
         }
         else {
             const uuid = generateUUID();
             storeUUID(uuid);
         }
     });
+}
+export async function loadAssets(purchasedItems) {
+    const response = await fetch('../src/assets/assets.json');
+    if (!response.ok) {
+        throw new Error('Failed to fetch assets');
+    }
+    const fetchedAssets = await response.json();
+    // Create an array of typeIds from the purchasedItems
+    const purchasedTypeIds = purchasedItems.map(item => item.typeId);
+    // Filter fetched assets based on whether their type is in the list of purchased item typeIds
+    const resultAssets = fetchedAssets.filter(asset => purchasedTypeIds.includes(asset.type));
+    return resultAssets;
+}
+export async function loadBackground(canvas, environment) {
+    const response = await fetch(environment.svgPath);
+    const svgData = await response.text();
+    let height = `${environment.size.height}px`;
+    let width = `${environment.size.width}px`;
+    // Clear the current canvas and set new content
+    canvas.innerHTML = `<div id="svgBackground" style="height:${height}; width:${width};">${svgData}</div>`;
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            const svgContainer = document.getElementById('svgBackground');
+            if (svgContainer) {
+                const svgElem = svgContainer.querySelector('svg');
+                if (svgElem) {
+                    resolve(svgElem);
+                }
+                else {
+                    reject(new Error("SVG element could not be found inside the container."));
+                }
+            }
+            else {
+                reject(new Error("SVG container could not be loaded."));
+            }
+        }, 0); // Might need adjustment based on how quickly your SVG loads/render 
+    });
+}
+export async function switchEnvironment(canvas, newEnvironment) {
+    await loadBackground(canvas, newEnvironment);
+    // Additional logic can be added here if needed, e.g., saving user preference
+}
+export function calculateCoinIncrement(tabs) {
+    // Increase coin count every 10 trees planted
+    return tabs % 10 === 0 ? 1 : 0;
 }
 //# sourceMappingURL=utils.js.map

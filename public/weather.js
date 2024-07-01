@@ -40,16 +40,22 @@ function showError(error) {
     }
 }
 export function changeBackground(type) {
-    const defaultBgColor = "#FFFFFF"; // Default background color
+    const defaultBgColor = "#F1F1F2"; // Neutral gray for default background color
     const bgColor = [
-        { type: "Clouds", color: "#71C4C2" },
-        { type: "Thunderstorm", color: "#E3BCB5" },
-        { type: "Rain", color: "#c4dfdd" },
-        { type: "Rain", color: "#E8D8D1" },
-        { type: "Clear", color: "#62788d" },
-        { type: "Clear", color: "#E1D8D1" },
-        { type: "Drizzle", color: "#F7F7F7" },
-        { type: "Snow", color: "#E8D8D2" }
+        { type: "Clouds", color: "#A3B1C6" }, // Soft blue-gray
+        { type: "Clouds", color: "#B0C4DE" }, // Light steel blue
+        { type: "Thunderstorm", color: "#505B67" }, // Dark slate gray
+        { type: "Thunderstorm", color: "#404E5A" }, // Deeper gray for intense storms
+        { type: "Rain", color: "#738290" }, // Cool medium gray
+        { type: "Rain", color: "#9FAFBF" }, // Light blue-gray
+        { type: "Rain", color: "#6E7F8D" }, // Dusty blue
+        { type: "Clear", color: "#F7D1BA" }, // Warm peach
+        { type: "Clear", color: "#FFF5EE" }, // Very pale orange
+        { type: "Clear", color: "#FFE5B4" }, // Mellow apricot
+        { type: "Drizzle", color: "#CDD6DD" }, // Light gray-blue
+        { type: "Drizzle", color: "#D3DDE4" }, // Very soft blue
+        { type: "Snow", color: "#E6ECEF" }, // Very pale blue
+        { type: "Snow", color: "#F0F8FF" } // Alice blue, mimicking snowy brightness
     ];
     let matchingTypes = bgColor.filter(item => item.type === type);
     let randomItem = matchingTypes[Math.floor(Math.random() * matchingTypes.length)];

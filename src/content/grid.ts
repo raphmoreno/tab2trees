@@ -1,124 +1,152 @@
-import { fetchAndDisplaySVG, getRandomItem, loadForest, saveForest } from "./utils.js";
 import { config } from './config.js';
+import { Asset } from "types/assets.js";
+import { AssetPlacement, GridArea, GridCell, PlacementStrategy } from "types/grid.js";
 
 
-type Position = {
-    row: number;
-    col: number;
-};
+export function findAvailablePositions(asset: Asset, grid: GridCell[][]): GridCell[] {
+    let availablePositions: GridCell[] = [];
+    let assetGridWidth = Math.ceil(asset.groundWidth / config.cellWidth);
+    let assetGridHeight = Math.ceil(asset.groundHeight / config.cellHeight);
 
-type Tile = {
-    type: string;
-    row: number;
-    col: number;
-};
+    //console.log(`Asset dimensions on grid: ${assetGridWidth} x ${assetGridHeight}`);
 
-export function initializeForest(initializedState:boolean) {
-    if (initializedState === true) {
-        const tiles = loadForest();  // Load tiles
-        if (tiles.length === 0) {
-            // If no tiles are saved, start from scratch
-            updateForestDisplay(0);
-        } else {
-            // If tiles exist, display them
-            updateForestDisplay(tiles.length);
+    // Ensure checks are made only where the entire asset can be placed
+    for (let row = 0; row <= grid.length - assetGridHeight; row++) {
+        for (let col = 0; col <= grid[0].length - assetGridWidth; col++) {
+            let canPlace = true;
+            // Validate all sub-cells for the asset's ground area
+            for (let dy = 0; dy < assetGridHeight; dy++) {
+                for (let dx = 0; dx < assetGridWidth; dx++) {
+                    if (!grid[row + dy][col + dx].available) {
+                        canPlace = false;
+                        break;
+                    }
+                }
+                if (!canPlace) break; // Exit early if placement is already invalid
+            }
+            if (canPlace) {
+                availablePositions.push(grid[row][col]);
+                //console.log(`Valid start at: (${row}, ${col})`);
+            }
         }
-        return true;  // Set the flag as initialized
+    }
+    //console.log(`Total available positions: ${availablePositions.length}`);
+    return availablePositions;
+}
+
+export function renderAssetOnPosition(asset: Asset, placement: GridCell, canvas: SVGSVGElement): void {
+    fetch(asset.svgPath)
+        .then(response => response.text())
+        .then(svgContent => {
+            const tileContainer = document.createElement('div');
+            tileContainer.style.width = `${asset.size.width}px`;
+            tileContainer.style.height = `${asset.size.height}px`;
+            tileContainer.style.position = 'absolute';
+            
+            // Use the provided placement coordinates directly
+            tileContainer.style.left = `${placement.offsetX}px`;
+            tileContainer.style.top = `${placement.offsetY}px`;
+            tileContainer.style.zIndex = `${(placement.x + placement.y).toString()}`; // Adjust zIndex based on position
+
+            tileContainer.innerHTML = svgContent; // Inject the SVG content
+
+            canvas.appendChild(tileContainer);
+        })
+        .catch(error => console.error('Error loading SVG content:', error));
+}
+
+export function markGridCells(asset: Asset, startCell: GridCell, grid: GridCell[][], available: boolean): void {
+    let assetGridWidth = Math.ceil(asset.groundWidth / config.cellWidth);
+    let assetGridHeight = Math.ceil(asset.groundHeight / config.cellHeight);
+    for (let y = 0; y < assetGridHeight; y++) {
+        for (let x = 0; x < assetGridWidth; x++) {
+            let targetX = startCell.x + x;
+            let targetY = startCell.y + y;
+            if (targetY < grid.length && targetX < grid[targetY].length) {
+                grid[targetY][targetX].available = available;
+            }
+        }
     }
 }
 
-export function generateSpiralPositions(gridWidth: number, gridHeight: number): Position[] {
-    let x = 0;
-    let y = 0;
-    let dx = 0;
-    let dy = -1;
-    let positions: Position[] = [];
-    let numSteps = gridWidth * gridHeight;
+export function createIsometricGrid(canvasWidth: number, canvasHeight: number, cellWidth: number, cellHeight: number): GridCell[][] {
+    const numRows = Math.floor(canvasHeight / cellHeight);
+    const numCols = Math.floor(canvasWidth / cellWidth);
 
-    let startX = Math.floor((gridWidth - 1) / 2);
-    let startY = Math.floor((gridHeight - 1) / 2);
+    let grid = new Array<Array<GridCell>>(numRows);
 
-    for (let i = 0; i < numSteps; i++) {
-        let gridX = x + startX;
-        let gridY = y + startY;
-
-        if (gridX >= 0 && gridX < gridWidth && gridY >= 0 && gridY < gridHeight) {
-            positions.push({ row: gridY, col: gridX });
-        }
-
-        if (x === y || (x < 0 && x === -y) || (x > 0 && x === 1 - y)) {
-            [dx, dy] = [-dy, dx];
-        }
-
-        x += dx;
-        y += dy;
-    }
-
-    return positions;
-}
-
-export function updateForestDisplay(count: number): void {
-    const tiles = loadForest();
-    if (!tiles || tiles.length === 0) {
-        generateAndDisplayTiles(count);
-    } else {
-        displayTiles(tiles);
-        if (count > tiles.length) {
-            addTile(tiles);
-            displayTiles(tiles);
-            saveForest(tiles);
-        }
-    }
-}
-
-export function generateAndDisplayTiles(count: number): void {
-    const forestElement = document.getElementById('isometric-grid');
-    if (forestElement) {
-        forestElement.innerHTML = '';
-        const tiles: Tile[] = [];
-        const positions = generateSpiralPositions(config.gridWidth, config.gridHeight);
-
-        for (let i = 0; i < count; i++) {
-            const position = positions[i];
-            if (!position) break;
-            const tileType = getRandomItem(config.tileTypes);
-            const tile: Tile = {
-                type: tileType,
-                row: position.row,
-                col: position.col
+    for (let row = 0; row < numRows; row++) {
+        grid[row] = new Array<GridCell>(numCols);
+        for (let col = 0; col < numCols; col++) {
+            // Calculate pixel offsets for isometric positioning
+            const offsetX = (col - row) * cellWidth / 2 + canvasWidth / 2; // Center x on the canvas
+            const offsetY = (col + row) * cellHeight / 2; // Standard staggered y position for isometry
+            grid[row][col] = {
+                x: col,  // Grid index
+                y: row,  // Grid index
+                offsetX: offsetX,  // Canvas position
+                offsetY: offsetY,  // Canvas position
+                available: true  // Initially, all cells are available
             };
-            tiles.push(tile);
-            displayTile(tile, forestElement);
         }
-
-        saveForest(tiles);
     }
+    return grid;
 }
 
-export function displayTiles(tiles: Tile[]): void {
-    const forestElement = document.getElementById('isometric-grid');
-    if (forestElement) {
-        forestElement.innerHTML = '';
-        tiles.forEach(tile => displayTile(tile, forestElement));
-    }
+export function markNoGoZones(grid: GridCell[][], svgElement: SVGSVGElement, noGoSelector: string): void {
+    const noGoAreas = svgElement.querySelectorAll(noGoSelector);
+
+    noGoAreas.forEach(area => {
+        const rect = (area as SVGGraphicsElement).getBBox();
+        const gridArea = convertToGridCoordinates(rect, svgElement, grid[0][0].x, grid[0][0].y);
+
+        // Mark grid cells that intersect with the no-go area as unavailable
+        for (let y = gridArea.y; y < gridArea.y + gridArea.height && y < grid.length; y++) {
+            for (let x = gridArea.x; x < gridArea.x + gridArea.width && x < grid[y].length; x++) {
+                grid[y][x].available = false;
+            }
+        }
+    });
 }
 
-export function displayTile(tile: Tile, container: HTMLElement): void {
-    const svgFilePath =`../src/assets/svg/${tile.type}.svg`;
-    fetchAndDisplaySVG(svgFilePath, container, 150, 100, tile.row, tile.col);
+export function convertToGridCoordinates(rect: DOMRect, svgElement: SVGSVGElement, offsetX: number, offsetY: number): GridArea {
+    // Adjust coordinates to align with the isometric grid
+    return {
+        x: Math.floor((rect.x - offsetX) / (config.canvasWidth / config.cellWidth)),
+        y: Math.floor((rect.y - offsetY) / (config.canvasHeight / config.cellHeight)),
+        width: Math.ceil(rect.width / (config.canvasWidth / config.cellWidth)),
+        height: Math.ceil(rect.height / (config.canvasHeight / config.cellHeight))
+    };
 }
 
-export function addTile(tiles: Tile[]): Tile[] {
-    const positions = generateSpiralPositions(config.gridWidth, config.gridHeight);
-    if (tiles.length < positions.length) {
-        const nextPosition = positions[tiles.length];
-        const tileType = getRandomItem(config.tileTypes);
-        const newTile: Tile = {
-            type: tileType,
-            row: nextPosition.row,
-            col: nextPosition.col
-        };
-        tiles.push(newTile);
+export function spawnAsset(asset: Asset, grid: GridCell[][], strategy: PlacementStrategy, canvas: SVGSVGElement): AssetPlacement | null {
+    const positions = findAvailablePositions(asset, grid);
+    //console.log(positions);
+
+    if (positions.length > 0) {
+        const position = (strategy === 'random') ?
+            positions[Math.floor(Math.random() * positions.length)] : // Random selection
+            positions[0]; // Sequential selection
+
+            renderAssetOnPosition(asset, position, canvas);
+        markGridCells(asset, position, grid, false);
+        return {asset, placement: position}
     }
-    return tiles;
+    return null;
+
+}
+
+export async function spawnRandomTree(
+    assets: Asset[],
+    grid: GridCell[][],
+    canvasBase: SVGSVGElement,
+    placementStrategy: PlacementStrategy
+): Promise<void> {
+    if (assets.length === 0) {
+        console.log("No assets available to spawn.");
+        return;
+    }
+    const asset = assets[Math.floor(Math.random() * assets.length)];
+    //console.log(`Found asset: ${asset.type}`);
+    spawnAsset(asset, grid, placementStrategy, canvasBase);
 }

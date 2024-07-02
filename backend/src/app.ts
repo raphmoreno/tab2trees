@@ -5,6 +5,11 @@ import cors from 'cors';
 import path from 'path';
 import Redis from 'redis';
 import AWS from 'aws-sdk';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 AWS.config.update({
   region: 'eu-west-3' // Adjust as needed

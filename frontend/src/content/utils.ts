@@ -1,4 +1,4 @@
-import { ShopItem, Asset, Environment } from "types/assets";
+import { ShopItem, Asset, Environment } from "../types/assets";
 
 
 // Define a generic type for items to be more flexible

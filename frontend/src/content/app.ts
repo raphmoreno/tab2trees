@@ -3,7 +3,7 @@ import { fetchWeather, displayWeather, getLocation } from './weather.js';
 import { motherlode, populateShop, updateCoinDisplay, getCoins, getPurchasedItems } from './shop.js';
 import { config } from './config.js';
 import { Asset, Environment, ShopItem } from '../types/assets.js';
-import { GridCell, GridArea, AssetPlacement, AppState, PlacementStrategy } from 'types/grid.js';
+import { GridCell, GridArea, AssetPlacement, AppState, PlacementStrategy } from '../types/grid';
 import { findAvailablePositions, renderAssetOnPosition, markGridCells, createIsometricGrid, spawnAsset, spawnRandomTree } from './grid.js';
 
 let forestInitialized = false;  // Flag to check if the forest has been initialized

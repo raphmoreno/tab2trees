@@ -130,10 +130,4 @@ app.get('/api/get-first-entry', (req, res) => {
   });
 });
 
-app.post('/api/purchase', (req, res) => {
-  const { item, amount } = req.body;
-  console.log(`Purchase made for ${item} costing ${amount}`);
-  res.json({ success: true, message: `Purchase successful for ${item}` });
-});
-
 app.listen(process.env.PORT || 3000, () => console.log(`Server running on port ${process.env.PORT || 3000}`));

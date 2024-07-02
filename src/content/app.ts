@@ -54,7 +54,7 @@ async function initializeApp() {
                 // Handle the new tab action
                 sendResponse({status: "Received"});
                 newTabHandler(assets);
-                incrementTabCount();
+                incrementTabCount(1);
             }
             return true;  // Important for asynchronous sendResponse
         });
@@ -102,13 +102,14 @@ function buildListeners(grid: GridCell[][], assets:Asset[]) {
 
 // Function to switch environments
 
-function incrementTabCount() {
-    fetch('http://tab.sora-mno.link/api/add-tree', {
+function incrementTabCount(count:Number) {
+    const userId = chrome.storage.local.get('userId');
+    fetch('http://tab.sora-mno.link/api/add-tab', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ count: 1 })  // Increment by one each time a new tab is opened
+        body: JSON.stringify({ userId, count })  // Increment by one each time a new tab is opened
     })
         .then(response => response.json())
         .then(data => {
@@ -144,6 +145,10 @@ async function newTabHandler(assets:Asset[]) {
                 updateTreeCounterDisplay(newLifetimeCount);
                 updateCoinDisplay(newCoins);
             });
+        }
+        else{
+            // implement reseting of forest, and adding a new coin
+            console.log("no more positions");
         }
     } catch (error) {
         console.error("Error handling new tab:", error);

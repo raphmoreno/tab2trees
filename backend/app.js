@@ -87,7 +87,7 @@ async function updateTabCount(userId) {
         },
         ReturnValues: 'UPDATED_NEW'
     };
-    return dynamoDb.update(params).promise();
+    return dynamoDB.update(params).promise();
 }
 
 app.use(cors());  // Place this before your routes are defined

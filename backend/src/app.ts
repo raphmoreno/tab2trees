@@ -50,10 +50,10 @@ const tileLimiter = rateLimit({
   handler: (req, res) => res.status(429).json({ message: "Too many requests, please try again later." })
 });
 
-async function updateTabCount(userId:string) {
+async function updateTabCount(userId: string) {
   const params = {
       TableName: 'UserStats',
-      Key: { user_id: userId },
+      Key: { user_id: userId }, // Make sure 'user_id' is the correct key name
       UpdateExpression: 'SET tab_count = if_not_exists(tab_count, :start) + :inc',
       ExpressionAttributeValues: {
           ':inc': 1,
@@ -64,16 +64,20 @@ async function updateTabCount(userId:string) {
   return dynamoDB.update(params).promise();
 }
 
+
 app.use(cors());
 
 app.post('/api/add-tab', tileLimiter, async (req, res) => {
   const { userId } = req.body;
+  if (!userId) {
+    return res.status(400).json({ error: 'userId is required' });
+  }
   try {
     await updateTabCount(userId);
     const newCount = await client.incrBy('globalTileCount', parseInt(req.body.count || 1));
     res.json({ globalTileCount: newCount });
   } catch (error) {
-    console.error('Redis Error:', error);
+    console.error('DynamoDB Error:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });

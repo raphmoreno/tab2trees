@@ -31,9 +31,9 @@ async function initializeTileCount() {
     if (!exists)
         await client.set('globalTileCount', 0);
 }
-app.use(express.static('./public'));
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
-app.get('/privacy', (req, res) => res.sendFile(path.join(__dirname, 'public', 'privacy-policy.html')));
+app.use(express.static('../public'));
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, '../public', 'index.html')));
+app.get('/privacy', (req, res) => res.sendFile(path.join(__dirname, '../public', 'privacy-policy.html')));
 const tileLimiter = rateLimit({
     windowMs: 1000,
     max: 2,

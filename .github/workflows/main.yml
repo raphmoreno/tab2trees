@@ -19,11 +19,11 @@ jobs:
     - name: Increment Version Number
       run: |
         echo "Incrementing version number..."
-        current_version=$(jq -r '.version' manifest.json)
+        current_version=$(jq -r '.version' frontend/manifest.json)
         IFS='.' read -r -a version_parts <<< "$current_version"
         ((version_parts[2]++))
         new_version="${version_parts[0]}.${version_parts[1]}.${version_parts[2]}"
-        jq ".version = \"$new_version\"" manifest.json > temp.json && mv temp.json manifest.json
+        jq ".version = \"$new_version\"" frontend/manifest.json > temp.json && mv temp.json frontend/manifest.json
         echo "Updated version: $new_version"
 
     - name: Package Extension

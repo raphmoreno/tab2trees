@@ -28,7 +28,7 @@ jobs:
 
     - name: Package Extension
       run: |
-        zip -r tab2trees.zip ./* -x "*.git*" -x "backend/*" -x "*.md" -x "dist/" -x "package-lock.json" -x "package.json" -x "tsconfig.json" -x "node_modules/"
+        zip -r tab2trees.zip ./frontend/* -x "*.git*" -x "*.md" -x "dist/" -x "package-lock.json" -x "package.json" -x "tsconfig.json" -x "node_modules/"
 
     - name: Create Release
       id: create_release

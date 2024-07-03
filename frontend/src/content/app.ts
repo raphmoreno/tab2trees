@@ -4,7 +4,7 @@ import { motherlode, populateShop, updateCoinDisplay, getCoins, getPurchasedItem
 import { config } from './config.js';
 import { Asset, Environment, ShopItem } from '../types/assets.js';
 import { GridCell, GridArea, AssetPlacement, AppState, PlacementStrategy } from '../types/grid';
-import { findAvailablePositions, renderAssetOnPosition, markGridCells, createIsometricGrid, spawnAsset, spawnRandomTree } from './grid.js';
+import { renderAssetOnPosition, createIsometricGrid, spawnAsset, spawnRandomTree } from './grid.js';
 
 let forestInitialized = false;  // Flag to check if the forest has been initialized
 
@@ -33,8 +33,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function initializeApp() {
     try {
-        const availableAssets = await getPurchasedItems();
+        let availableAssets = await getPurchasedItems();
+        
+        // Ensure there's always a base asset (e.g., 'pine') available
+        if (availableAssets.length === 0) {
+            // Add a default 'pine' tree if no items have been purchased
+            const baseAsset: ShopItem = {
+                id: 2, // Assuming '2' is the ID for Pine Tree in shopItems array
+                name: "Pine Tree",
+                type: "tree",
+                cost: 0,
+                img: "../src/assets/svg/pine.svg",
+                typeId: 'pine'
+            };
+            availableAssets.push(baseAsset);
+            // Optionally save this update to local storage if necessary
+            chrome.storage.local.set({purchasedItems: JSON.stringify(availableAssets)});
+        }
         const assets = await loadAssets(availableAssets) as Asset[];
+        console.log(assets);
         const canvas = document.getElementById('canvas') as HTMLElement;
         let svgElement = await loadBackground(canvas, defaultEnvironment);
         if (!svgElement) {
@@ -102,23 +119,31 @@ function buildListeners(grid: GridCell[][], assets:Asset[]) {
 
 // Function to switch environments
 
-function incrementTabCount(count:Number) {
-    const userId = chrome.storage.local.get('userId');
-    fetch('http://tab.sora-mno.link/api/add-tab', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ userId, count })  // Increment by one each time a new tab is opened
-    })
-        .then(response => response.json())
-        .then(data => {
-            displayTabCount(data.globalTileCount);
+async function incrementTabCount(count: number) {
+    chrome.storage.local.get('userId', (result) => {
+        const userId = result.userId;
+        if (!userId) {
+            console.error('User ID not found');
+            return;
+        }
+        console.log(userId); // Make sure this logs the correct userId
+        fetch('http://tab.sora-mno.link/api/add-tab', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ userId, count })  // Increment by one each time a new tab is opened
         })
-        .catch(error => {
-            console.error('Error updating tile count:', error);
-            displayTabCount('Error retrieving data');
-        });
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                displayTabCount(data.globalTileCount);
+            })
+            .catch(error => {
+                console.error('Error updating tile count:', error);
+                displayTabCount('Error retrieving data');
+            });
+    });
 }
 
 async function newTabHandler(assets:Asset[]) {    

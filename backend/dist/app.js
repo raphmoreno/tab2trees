@@ -42,10 +42,11 @@ const tileLimiter = rateLimit({
     handler: (req, res) => res.status(429).json({ message: "Too many requests, please try again later." })
 });
 async function updateTabCount(userId) {
+    console.log("updating user id", userId);
     const params = {
         TableName: 'UserStats',
         Key: { user_id: userId }, // Make sure 'user_id' is the correct key name
-        UpdateExpression: 'SET tab_count = if_not_exists(tab_count, :start) + :inc',
+        UpdateExpression: 'SET tab_Count = if_not_exists(tab_Count, :start) + :inc',
         ExpressionAttributeValues: {
             ':inc': 1,
             ':start': 0

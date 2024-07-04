@@ -1,6 +1,6 @@
-import { updateDebugVisibility, updateTreeCounterDisplay, clearStorageData, toggleVisibility, displayTabCount, safeAddEventListener, initializeUserID, loadAssets, loadBackground, calculateCoinIncrement } from './utils.js';
+import { updateDebugVisibility, updateTreeCounterDisplay, clearStorageData, toggleVisibility, displayGlobalTabCount, safeAddEventListener, initializeUserID, loadAssets, loadBackground } from './utils.js';
 import { getLocation } from './weather.js';
-import { populateShop, updateCoinDisplay, getCoins, getPurchasedItems } from './shop.js';
+import { populateShop, updateCoinDisplay, getCoins, getPurchasedItems, incrementCoins } from './shop.js';
 import { config } from './config.js';
 import { renderAssetOnPosition, createIsometricGrid, spawnAsset, spawnRandomTree } from './grid.js';
 let forestInitialized = false; // Flag to check if the forest has been initialized
@@ -37,7 +37,6 @@ async function initializeApp() {
             chrome.storage.local.set({ purchasedItems: JSON.stringify(availableAssets) });
         }
         const assets = await loadAssets(availableAssets);
-        console.log(assets);
         const canvas = document.getElementById('canvas');
         let svgElement = await loadBackground(canvas, defaultEnvironment);
         if (!svgElement) {
@@ -48,7 +47,7 @@ async function initializeApp() {
         updateDebugVisibility(config.isDebugMode);
         const coinCount = await getCoins();
         initializeUserID();
-        displayTabCount();
+        displayGlobalTabCount();
         updateTreeCounterDisplay();
         updateCoinDisplay(coinCount);
         getLocation();
@@ -81,7 +80,7 @@ function buildListeners(grid, assets) {
     //safeAddEventListener('motherlodeButton', 'click', motherlode);
     window.clearStorageData = clearStorageData;
     chrome.tabs.onCreated.addListener(function () {
-        displayTabCount;
+        displayGlobalTabCount;
     });
     // Listener for spawning random tree
     if (SVGCanvas && appSwitcherButton && appSwitcherMenu) {
@@ -108,7 +107,6 @@ async function incrementTabCount(count) {
             console.error('User ID not found');
             return;
         }
-        console.log(userId); // Make sure this logs the correct userId
         fetch('http://tab.sora-mno.link/api/add-tab', {
             method: 'POST',
             headers: {
@@ -117,13 +115,10 @@ async function incrementTabCount(count) {
             body: JSON.stringify({ userId, count }) // Increment by one each time a new tab is opened
         })
             .then(response => response.json())
-            .then(data => {
-            console.log(data);
-            displayTabCount(data.globalTileCount);
-        })
+            .then(data => displayGlobalTabCount(data.globalTileCount))
             .catch(error => {
             console.error('Error updating tile count:', error);
-            displayTabCount('Error retrieving data');
+            displayGlobalTabCount('Error retrieving data');
         });
     });
 }
@@ -132,25 +127,21 @@ async function newTabHandler(assets) {
         const { grid, trees } = await loadAppState();
         const newAsset = assets[Math.floor(Math.random() * assets.length)];
         const SVGCanvas = document.getElementById('svgBackground');
+        // increment the lifetime count
+        updateTreeCounterDisplay();
         const assetPlacement = spawnAsset(newAsset, grid, placementStrategy, SVGCanvas);
         if (assetPlacement != null) {
             trees.push(assetPlacement);
-            let newLifetimeCount = trees.length;
-            let newCoins = await getCoins() + calculateCoinIncrement(trees.length);
             // Save the updated state
             chrome.storage.local.set({
                 forestState: JSON.stringify(trees), // Save updated trees
                 gridState: JSON.stringify(grid), // Save updated grid
-                lifetimeTreeCount: newLifetimeCount,
-                coins: newCoins
-            }, () => {
-                updateTreeCounterDisplay(newLifetimeCount);
-                updateCoinDisplay(newCoins);
             });
         }
         else {
             // implement reseting of forest, and adding a new coin
-            console.log("no more positions");
+            let trees = [];
+            await incrementCoins(1); // Increment coins by 1
         }
     }
     catch (error) {
@@ -188,7 +179,6 @@ async function initializeAppState() {
             renderAssetOnPosition(tree.asset, tree.placement, canvas);
         });
         // Update the display for the tree counter
-        updateTreeCounterDisplay(trees.length);
         return { grid, trees };
     }
     catch (error) {

@@ -1,3 +1,4 @@
+import { fetchUserData } from "./utils.js";
 const shopItems = [
     { id: 1, name: "Oak (Autumn)", type: "tree", cost: 30, img: "../src/assets/svg/tree-2.svg", typeId: 'oak-autumn' },
     { id: 2, name: "Pine Tree", type: "tree", cost: 20, img: "../src/assets/svg/pine.svg", typeId: 'pine' },
@@ -9,22 +10,48 @@ const shopItems = [
 // SHOP AND MONEY HANDLING
 export async function getCoins() {
     return new Promise((resolve, reject) => {
-        chrome.storage.local.get('coins', (result) => {
+        chrome.storage.local.get('userId', (result) => {
             if (chrome.runtime.lastError) {
-                // Handle errors if there was a problem accessing the storage
-                console.error('Error retrieving coins:', chrome.runtime.lastError);
-                reject(chrome.runtime.lastError);
+                console.error('Error retrieving user ID:', chrome.runtime.lastError.message);
+                reject(new Error('Failed to retrieve user ID'));
+            }
+            else if (!result.userId) {
+                console.error('User ID not found in local storage.');
+                reject(new Error('User ID not found'));
             }
             else {
-                // Parse the coins value or return 0 if undefined
-                const coins = result.coins;
-                resolve(coins ? parseInt(coins, 10) : 0); // Use base 10 for parseInt
+                fetchUserData(result.userId).then(userData => {
+                    resolve(userData.coinCount);
+                }).catch(error => {
+                    console.error('Error retrieving coins:', error);
+                    reject(new Error('Failed to retrieve coin count'));
+                });
             }
         });
     });
 }
-export function updateCoins(amount) {
-    localStorage.setItem('coins', amount.toString());
+export async function updateCoins(coinChange) {
+    try {
+        const userId = await chrome.storage.local.get('userId');
+        const response = await fetch('http://tab.sora-mno.link/api/updateCoins', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ userId, coinChange })
+        });
+        const data = await response.json();
+        if (response.ok) {
+            updateCoinDisplay(data.coinCount);
+        }
+        else {
+            throw new Error(data.message || 'Failed to update coins');
+        }
+    }
+    catch (error) {
+        console.error('Error updating coins:', error);
+        showToast('Failed to update coins');
+    }
 }
 export function getPurchasedItems() {
     return new Promise((resolve, reject) => {
@@ -135,6 +162,36 @@ export function showToast(message) {
             toast.classList.remove('toast-show');
             setTimeout(() => container.removeChild(toast), 500); // Wait for animation to finish
         }, 5000);
+    }
+}
+export function incrementCoins(coin) {
+    chrome.storage.local.get('userId', function (result) {
+        const userId = result.userId;
+        fetch('http://tab.sora-mno.link/api/update-coins', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ userId, coin }) // Increment coins
+        })
+            .then(response => response.json())
+            .then(data => {
+            updateCoinDisplay(data.coinCount);
+            triggerCoinanimation(coin);
+        })
+            .catch(error => {
+            console.error('Error updating coin count:', error);
+        });
+    });
+}
+export function triggerCoinanimation(coin) {
+    const coinCounter = document.getElementById('coinCounter');
+    if (coinCounter) {
+        const animation = document.createElement('span');
+        animation.textContent = `+${coin}`;
+        animation.className = 'coin-animation';
+        coinCounter.appendChild(animation);
+        setTimeout(() => coinCounter.removeChild(animation), 1000); // Animation lasts for 1 second
     }
 }
 //# sourceMappingURL=shop.js.map

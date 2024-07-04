@@ -22,15 +22,31 @@ export function fetchAndDisplaySVG(svgFilePath, containerElement, width, height,
     })
         .catch(error => console.error('Error fetching SVG:', error));
 }
-export function updateTreeCounterDisplay(lifetimeCount) {
+export async function updateTreeCounterDisplay(lifetimeCount) {
     const treeCounterElement = document.getElementById('treeCounter');
     if (treeCounterElement) {
         if (lifetimeCount !== undefined) {
             treeCounterElement.textContent = `${lifetimeCount}`;
         }
         else {
-            chrome.storage.local.get({ lifetimeTreeCount: 0 }, function (result) {
-                treeCounterElement.textContent = `${result.lifetimeTreeCount}`;
+            // Fetch the userId correctly
+            chrome.storage.local.get('userId', async (result) => {
+                const userId = result.userId;
+                if (userId) {
+                    try {
+                        const { tabCount } = await fetchUserData(userId);
+                        treeCounterElement.textContent = `${tabCount}`;
+                    }
+                    catch (error) {
+                        console.error('Failed to fetch user data:', error);
+                        // Optionally set some fallback or error message
+                        treeCounterElement.textContent = 'Error';
+                    }
+                }
+                else {
+                    console.error('User ID not found');
+                    treeCounterElement.textContent = 'Error'; // Handle the case where userId is not found
+                }
             });
         }
     }
@@ -73,7 +89,7 @@ export function updateDebugVisibility(isDebugMode) {
 export function toggleVisibility(elementId, visible) {
     document.getElementById(elementId).style.display = visible ? 'flex' : 'none';
 }
-export function displayTabCount(count) {
+export function displayGlobalTabCount(count) {
     const tileCountDiv = document.getElementById('tileCount');
     if (tileCountDiv) {
         if (count !== undefined && typeof count === 'number') {
@@ -176,8 +192,26 @@ export async function switchEnvironment(canvas, newEnvironment) {
     await loadBackground(canvas, newEnvironment);
     // Additional logic can be added here if needed, e.g., saving user preference
 }
-export function calculateCoinIncrement(tabs) {
-    // Increase coin count every 10 trees planted
-    return tabs % 10 === 0 ? 1 : 0;
+export async function fetchUserData(userId) {
+    try {
+        const response = await fetch(`http://tab.sora-mno.link/api/user?userId=${encodeURIComponent(userId)}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        if (!response.ok) {
+            throw new Error('Failed to fetch user data');
+        }
+        const data = await response.json();
+        const tabCount = data.tab_Count || 0; // Default to 0 if undefined
+        const coinCount = data.coin_Count || 0; // Default to 0 if undefined
+        console.log('Tab Count:', tabCount, 'Coin Count:', coinCount);
+        return { tabCount, coinCount };
+    }
+    catch (error) {
+        console.error('Error fetching user data:', error);
+        throw error; // Rethrow or handle as necessary
+    }
 }
 //# sourceMappingURL=utils.js.map

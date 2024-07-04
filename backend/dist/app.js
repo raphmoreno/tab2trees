@@ -57,14 +57,39 @@ async function updateTabCount(userId) {
 }
 app.use(cors());
 app.post('/api/add-tab', tileLimiter, async (req, res) => {
+    var _a;
     const { userId } = req.body;
     if (!userId) {
         return res.status(400).json({ error: 'userId is required' });
     }
     try {
-        await updateTabCount(userId);
+        let userData = await updateTabCount(userId);
+        let userCount = (_a = userData.Attributes) === null || _a === void 0 ? void 0 : _a.tab_Count;
         const newCount = await client.incrBy('globalTileCount', parseInt(req.body.count || 1));
-        res.json({ globalTileCount: newCount });
+        res.json({ userCount: userCount, globalTileCount: newCount });
+    }
+    catch (error) {
+        console.error('DynamoDB Error:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+app.get('/api/user', tileLimiter, async (req, res) => {
+    const { userId } = req.query; // Access userId from query parameters
+    if (!userId) {
+        return res.status(400).json({ error: 'userId is required' });
+    }
+    try {
+        const params = {
+            TableName: 'UserStats',
+            Key: { user_id: userId } // Assuming 'user_id' is the correct primary key attribute
+        };
+        const data = await dynamoDB.get(params).promise();
+        if (data.Item) {
+            res.json(data.Item);
+        }
+        else {
+            res.status(404).json({ message: "User not found" });
+        }
     }
     catch (error) {
         console.error('DynamoDB Error:', error);
@@ -72,10 +97,11 @@ app.post('/api/add-tab', tileLimiter, async (req, res) => {
     }
 });
 app.post('/updateCoins', tileLimiter, async (req, res) => {
+    var _a;
     const { userId, coinChange } = req.body;
     try {
-        await addCoins(userId, coinChange);
-        res.json({ message: 'Coins added successfully.' });
+        let data = await addCoins(userId, coinChange);
+        res.json({ message: 'Coins added successfully.', coinCount: (_a = data.Attributes) === null || _a === void 0 ? void 0 : _a.coin_count });
     }
     catch (error) {
         console.error(error);

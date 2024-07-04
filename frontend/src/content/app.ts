@@ -1,6 +1,6 @@
-import { updateDebugVisibility, updateTreeCounterDisplay, clearStorageData, toggleVisibility, displayTabCount, safeAddEventListener, initializeUserID, loadAssets, loadBackground, calculateCoinIncrement } from './utils.js';
+import { updateDebugVisibility, updateTreeCounterDisplay, clearStorageData, toggleVisibility, displayGlobalTabCount, safeAddEventListener, initializeUserID, loadAssets, loadBackground, fetchUserData } from './utils.js';
 import { fetchWeather, displayWeather, getLocation } from './weather.js';
-import { motherlode, populateShop, updateCoinDisplay, getCoins, getPurchasedItems } from './shop.js';
+import { motherlode, populateShop, updateCoinDisplay, getCoins, getPurchasedItems, incrementCoins } from './shop.js';
 import { config } from './config.js';
 import { Asset, Environment, ShopItem } from '../types/assets.js';
 import { GridCell, GridArea, AssetPlacement, AppState, PlacementStrategy } from '../types/grid';
@@ -51,7 +51,6 @@ async function initializeApp() {
             chrome.storage.local.set({purchasedItems: JSON.stringify(availableAssets)});
         }
         const assets = await loadAssets(availableAssets) as Asset[];
-        console.log(assets);
         const canvas = document.getElementById('canvas') as HTMLElement;
         let svgElement = await loadBackground(canvas, defaultEnvironment);
         if (!svgElement) {
@@ -62,7 +61,7 @@ async function initializeApp() {
         updateDebugVisibility(config.isDebugMode);
         const coinCount = await getCoins();
         initializeUserID();
-        displayTabCount();    
+        displayGlobalTabCount();    
         updateTreeCounterDisplay();
         updateCoinDisplay(coinCount);    
         getLocation();
@@ -94,8 +93,9 @@ function buildListeners(grid: GridCell[][], assets:Asset[]) {
     safeAddEventListener('overlay-cross', 'click', () => toggleVisibility('shopOverlay', false));
     //safeAddEventListener('motherlodeButton', 'click', motherlode);
     window.clearStorageData = clearStorageData;
+
     chrome.tabs.onCreated.addListener(function () {
-        displayTabCount
+        displayGlobalTabCount
     });
 
 
@@ -126,7 +126,6 @@ async function incrementTabCount(count: number) {
             console.error('User ID not found');
             return;
         }
-        console.log(userId); // Make sure this logs the correct userId
         fetch('http://tab.sora-mno.link/api/add-tab', {
             method: 'POST',
             headers: {
@@ -135,13 +134,10 @@ async function incrementTabCount(count: number) {
             body: JSON.stringify({ userId, count })  // Increment by one each time a new tab is opened
         })
             .then(response => response.json())
-            .then(data => {
-                console.log(data);
-                displayTabCount(data.globalTileCount);
-            })
+            .then(data => displayGlobalTabCount(data.globalTileCount))
             .catch(error => {
                 console.error('Error updating tile count:', error);
-                displayTabCount('Error retrieving data');
+                displayGlobalTabCount('Error retrieving data');
             });
     });
 }
@@ -152,28 +148,25 @@ async function newTabHandler(assets:Asset[]) {
 
         const newAsset = assets[Math.floor(Math.random() * assets.length)] as Asset;
         const SVGCanvas = document.getElementById('svgBackground') as unknown as SVGSVGElement;
+        
+        // increment the lifetime count
+        updateTreeCounterDisplay()
 
         const assetPlacement = spawnAsset(newAsset, grid, placementStrategy, SVGCanvas);
 
         if (assetPlacement != null) {
             trees.push(assetPlacement);
-            let newLifetimeCount = trees.length;
-            let newCoins = await getCoins() + calculateCoinIncrement(trees.length);
 
             // Save the updated state
             chrome.storage.local.set({
                 forestState: JSON.stringify(trees),  // Save updated trees
                 gridState: JSON.stringify(grid),  // Save updated grid
-                lifetimeTreeCount: newLifetimeCount,
-                coins: newCoins
-            }, () => {
-                updateTreeCounterDisplay(newLifetimeCount);
-                updateCoinDisplay(newCoins);
             });
         }
         else{
             // implement reseting of forest, and adding a new coin
-            console.log("no more positions");
+            let trees = [];
+            await incrementCoins(1); // Increment coins by 1
         }
     } catch (error) {
         console.error("Error handling new tab:", error);
@@ -213,7 +206,6 @@ async function initializeAppState(): Promise<AppState> {
         });
 
         // Update the display for the tree counter
-        updateTreeCounterDisplay(trees.length);
         return { grid, trees };
     } catch (error) {
         console.error("Failed to load application state:", error);
@@ -221,3 +213,4 @@ async function initializeAppState(): Promise<AppState> {
         throw error;
     }
 }
+

@@ -1,6 +1,5 @@
 import { ShopItem, Asset, Environment } from "../types/assets";
 
-
 // Define a generic type for items to be more flexible
 export function getRandomItem<T>(items: T[]): T {
     return items[Math.floor(Math.random() * items.length)];
@@ -30,22 +29,36 @@ export function fetchAndDisplaySVG(svgFilePath: string, containerElement: HTMLEl
         .catch(error => console.error('Error fetching SVG:', error));
 }
 
-export function updateTreeCounterDisplay(lifetimeCount?: number): void {
+export async function updateTreeCounterDisplay(lifetimeCount?: number): Promise<void> {
     const treeCounterElement = document.getElementById('treeCounter');
-    if(treeCounterElement){
-
-    if (lifetimeCount !== undefined) {
-        treeCounterElement.textContent = `${lifetimeCount}`;
-    } else {
-        chrome.storage.local.get({lifetimeTreeCount: 0}, function(result){
-            treeCounterElement.textContent = `${result.lifetimeTreeCount}`;
-        });
-    }
+    if (treeCounterElement) {
+        if (lifetimeCount !== undefined) {
+            treeCounterElement.textContent = `${lifetimeCount}`;
+        } else {
+            // Fetch the userId correctly
+            chrome.storage.local.get('userId', async (result) => {
+                const userId = result.userId;
+                if (userId) {
+                    try {
+                        const { tabCount } = await fetchUserData(userId);
+                        treeCounterElement.textContent = `${tabCount}`;
+                    } catch (error) {
+                        console.error('Failed to fetch user data:', error);
+                        // Optionally set some fallback or error message
+                        treeCounterElement.textContent = 'Error';
+                    }
+                } else {
+                    console.error('User ID not found');
+                    treeCounterElement.textContent = 'Error'; // Handle the case where userId is not found
+                }
+            });
+        }
     }
 }
 
+
 export function saveForest(tiles: any[]): void {
-    localStorage.setItem('forestState', JSON.stringify(tiles));    
+    localStorage.setItem('forestState', JSON.stringify(tiles));
 }
 
 export function loadForest(): any[] {
@@ -82,15 +95,13 @@ export function updateDebugVisibility(isDebugMode: boolean): void {
     });
 }
 
-
-
 export function toggleVisibility(elementId: string, visible: boolean): void {
     document.getElementById(elementId)!.style.display = visible ? 'flex' : 'none';
 }
 
-export function displayTabCount(count?:string) {
+export function displayGlobalTabCount(count?: string) {
     const tileCountDiv = document.getElementById('tileCount');
-    if (tileCountDiv){
+    if (tileCountDiv) {
         if (count !== undefined && typeof count === 'number') {
             // Display the count directly if it's provided
             let treesplanted = Math.floor(count / 1000);
@@ -123,7 +134,7 @@ export function safeAddEventListener(selector: string, event: string, handler: E
 }
 
 export function clearStorageData(): void {
-    chrome.storage.local.remove(['forestState', 'gridState'], function() {
+    chrome.storage.local.remove(['forestState', 'gridState'], function () {
         console.log('forestState and gridState have been cleared from Chrome storage.');
     });
 }
@@ -131,20 +142,20 @@ export function clearStorageData(): void {
 (window as any).clearStorageData = clearStorageData;
 
 export function generateUUID() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
         var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
         return v.toString(16);
     });
 }
 
 export function storeUUID(uuid: string) {
-    chrome.storage.local.set({userId: uuid}, function() {
+    chrome.storage.local.set({ userId: uuid }, function () {
         //console.log('User ID is set to ' + uuid);
     });
 }
 
 export function initializeUserID() {
-    chrome.storage.local.get('userId', function(result) {
+    chrome.storage.local.get('userId', function (result) {
         if (result.userId) {
             //console.log('Existing User ID found:', result.userId);
         } else {
@@ -166,7 +177,7 @@ export async function loadAssets(purchasedItems: ShopItem[]): Promise<Asset[]> {
 
     // Filter fetched assets based on whether their type is in the list of purchased item typeIds
     const resultAssets = fetchedAssets.filter(asset => purchasedTypeIds.includes(asset.type));
-    
+
     return resultAssets;
 }
 
@@ -201,7 +212,24 @@ export async function switchEnvironment(canvas: HTMLElement, newEnvironment: Env
     // Additional logic can be added here if needed, e.g., saving user preference
 }
 
-export function calculateCoinIncrement(tabs: number) {
-    // Increase coin count every 10 trees planted
-    return tabs % 10 === 0 ? 1 : 0;
+export async function fetchUserData(userId: string) {
+    try {
+        const response = await fetch(`http://tab.sora-mno.link/api/user?userId=${encodeURIComponent(userId)}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        if (!response.ok) {
+            throw new Error('Failed to fetch user data');
+        }
+        const data = await response.json();
+        const tabCount = data.tab_Count || 0; // Default to 0 if undefined
+        const coinCount = data.coin_Count || 0; // Default to 0 if undefined
+        console.log('Tab Count:', tabCount, 'Coin Count:', coinCount);
+        return { tabCount, coinCount };
+    } catch (error) {
+        console.error('Error fetching user data:', error);
+        throw error; // Rethrow or handle as necessary
+    }
 }

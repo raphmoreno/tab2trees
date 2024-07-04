@@ -73,7 +73,7 @@ app.post('/api/add-tab', tileLimiter, async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
-app.get('/api/user', tileLimiter, async (req, res) => {
+app.get('/api/user', async (req, res) => {
     const { userId } = req.query; // Access userId from query parameters
     if (!userId) {
         return res.status(400).json({ error: 'userId is required' });

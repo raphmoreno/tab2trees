@@ -17,7 +17,7 @@ async function submitFeedback() {
     const feedbackType = document.getElementById('feedbackType').value;
     const feedbackText = document.getElementById('feedbackText').value;
     try {
-        const response = await fetch('http://your-backend-url/api/feedback', {
+        const response = await fetch('http://tab.sora-mno.link/api/feedback', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, rating, feedbackType, feedbackText })

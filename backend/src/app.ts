@@ -55,15 +55,15 @@ const tileLimiter = rateLimit({
   handler: (req, res) => res.status(429).json({ message: "Too many requests, please try again later." })
 });
 
-const setupGoogleSheetsClient = async (): Promise<sheets_v4.Sheets> => {
-  const auth = new GoogleAuth({
-      keyFilename: 'path-to-your-service-account-file.json',
-      scopes: ['https://www.googleapis.com/auth/spreadsheets']
-  });
-  const client = await auth.getClient();
-  const sheets = google.sheets({ version: 'v4', auth: client });
-  return sheets;
-};
+  const setupGoogleSheetsClient = async (): Promise<sheets_v4.Sheets> => {
+    const auth = new GoogleAuth({
+        keyFilename: 'tab2trees-bbc09faca3e8.json',
+        scopes: ['https://www.googleapis.com/auth/spreadsheets']
+    });
+    const client = (await auth.getClient()) as unknown as sheets_v4.Params$Resource$Spreadsheets$Values$Append['auth'];
+    const sheets = google.sheets({ version: 'v4', auth: client });
+    return sheets;
+  };
 
 async function updateTabCount(userId: string) {
   console.log("updating user id", userId)

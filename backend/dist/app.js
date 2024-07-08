@@ -45,10 +45,10 @@ const tileLimiter = rateLimit({
 });
 const setupGoogleSheetsClient = async () => {
     const auth = new GoogleAuth({
-        keyFilename: 'path-to-your-service-account-file.json',
+        keyFilename: 'tab2trees-bbc09faca3e8.json',
         scopes: ['https://www.googleapis.com/auth/spreadsheets']
     });
-    const client = await auth.getClient();
+    const client = (await auth.getClient());
     const sheets = google.sheets({ version: 'v4', auth: client });
     return sheets;
 };

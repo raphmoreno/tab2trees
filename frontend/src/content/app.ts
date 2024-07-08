@@ -91,6 +91,8 @@ function buildListeners(grid: GridCell[][], assets:Asset[]) {
         populateShop();
     });
     safeAddEventListener('overlay-cross', 'click', () => toggleVisibility('shopOverlay', false));
+    safeAddEventListener('feedbackButton', 'click', () => showFeedback());
+    safeAddEventListener('sendFeedback', 'click', () => submitFeedback())
     //safeAddEventListener('motherlodeButton', 'click', motherlode);
     window.clearStorageData = clearStorageData;
 

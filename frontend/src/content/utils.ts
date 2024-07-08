@@ -5,6 +5,39 @@ export function getRandomItem<T>(items: T[]): T {
     return items[Math.floor(Math.random() * items.length)];
 }
 
+export function showFeedback(): void{
+    const form = document.getElementById('feedbackForm');
+    if (form){
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    } else {
+    console.log ("couldn't find feedback form")
+    }
+}
+
+async function submitFeedback() {
+    const username = document.getElementById('username').value;
+    const rating = document.querySelector('input[name="rating"]:checked').value;
+    const feedbackType = document.getElementById('feedbackType').value;
+    const feedbackText = document.getElementById('feedbackText').value;
+
+    try {
+        const response = await fetch('http://your-backend-url/api/feedback', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, rating, feedbackType, feedbackText })
+        });
+        if (response.ok) {
+            showToast('Feedback submitted successfully!');
+            document.getElementById('feedbackForm').style.display = 'none';
+        } else {
+            throw new Error('Failed to submit feedback');
+        }
+    } catch (error) {
+        console.error('Error submitting feedback:', error);
+        showToast('Error submitting feedback');
+    }
+}
+
 // Define types for the parameters to ensure they are used correctly
 export function fetchAndDisplaySVG(svgFilePath: string, containerElement: HTMLElement, width: number, height: number, row: number, col: number): void {
     fetch(svgFilePath)
@@ -232,4 +265,25 @@ export async function fetchUserData(userId: string) {
         console.error('Error fetching user data:', error);
         throw error; // Rethrow or handle as necessary
     }
+}
+
+export function showToast(message: string) {
+    const container = document.getElementById('toast-container');
+    if(container){
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.textContent = message;
+        container.appendChild(toast);
+
+        // Trigger the animation to slide in
+        setTimeout(() => {
+            toast.classList.add('toast-show');
+        }, 100); // Wait for the DOM to update
+
+        // Automatically hide the toast after 5 seconds
+        setTimeout(() => {
+            toast.classList.remove('toast-show');
+            setTimeout(() => container.removeChild(toast), 500); // Wait for animation to finish
+        }, 5000);
+}
 }

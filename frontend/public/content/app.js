@@ -77,6 +77,8 @@ function buildListeners(grid, assets) {
         populateShop();
     });
     safeAddEventListener('overlay-cross', 'click', () => toggleVisibility('shopOverlay', false));
+    safeAddEventListener('feedbackButton', 'click', () => showFeedback());
+    safeAddEventListener('sendFeedback', 'click', () => submitFeedback());
     //safeAddEventListener('motherlodeButton', 'click', motherlode);
     window.clearStorageData = clearStorageData;
     chrome.tabs.onCreated.addListener(function () {

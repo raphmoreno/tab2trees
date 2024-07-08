@@ -86,6 +86,25 @@
         </div>
     </div>
     <div id="weatherInfo" class="hidden"></div>
+    <button id="feedbackButton">Give Feedback</button>
+<div id="feedbackForm" style="display:none;">
+    <input type="text" id="username" placeholder="Username" required>
+    <div id="ratingContainer">
+        <span>Rating:</span>
+        <!-- Radio buttons for rating -->
+        <label><input type="radio" name="rating" value="1"> 1</label>
+        <label><input type="radio" name="rating" value="2"> 2</label>
+        <label><input type="radio" name="rating" value="3"> 3</label>
+        <label><input type="radio" name="rating" value="4"> 4</label>
+        <label><input type="radio" name="rating" value="5"> 5</label>
+    </div>
+    <select id="feedbackType">
+        <option value="new idea">New Idea</option>
+        <option value="bug report">Bug Report</option>
+    </select>
+    <textarea id="feedbackText" placeholder="Your feedback"></textarea>
+    <button id="submitFeedback">Send Feedback</button>
+</div>
     <button id="donateButton" class="button-main hidden" style="position: absolute; bottom: 20px; right: 20px;">
         <a href="https://patreon.com/tab2trees"> Donate </a>
     </button>

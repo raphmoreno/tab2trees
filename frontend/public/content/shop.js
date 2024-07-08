@@ -1,4 +1,4 @@
-import { fetchUserData } from "./utils.js";
+import { fetchUserData, showToast } from "./utils.js";
 const shopItems = [
     { id: 1, name: "Oak (Autumn)", type: "tree", cost: 30, img: "../src/assets/svg/tree-2.svg", typeId: 'oak-autumn' },
     { id: 2, name: "Pine Tree", type: "tree", cost: 20, img: "../src/assets/svg/pine.svg", typeId: 'pine' },
@@ -146,24 +146,6 @@ export async function motherlode() {
     const newCount = currentCoins + 100;
     updateCoins(newCount);
     updateCoinDisplay(newCount);
-}
-export function showToast(message) {
-    const container = document.getElementById('toast-container');
-    if (container) {
-        const toast = document.createElement('div');
-        toast.className = 'toast';
-        toast.textContent = message;
-        container.appendChild(toast);
-        // Trigger the animation to slide in
-        setTimeout(() => {
-            toast.classList.add('toast-show');
-        }, 100); // Wait for the DOM to update
-        // Automatically hide the toast after 5 seconds
-        setTimeout(() => {
-            toast.classList.remove('toast-show');
-            setTimeout(() => container.removeChild(toast), 500); // Wait for animation to finish
-        }, 5000);
-    }
 }
 export function triggerCoinanimation(coin) {
     const coinCounter = document.getElementById('coinCounter');

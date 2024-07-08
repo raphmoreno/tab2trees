@@ -1,4 +1,4 @@
-import { fetchUserData } from "./utils.js";
+import { fetchUserData, showToast } from "./utils.js";
 
 // Define an interface for shop items
 interface ShopItem {
@@ -166,27 +166,6 @@ export async function motherlode(): Promise<void> {
     const newCount = currentCoins + 100;
     updateCoins(newCount);
     updateCoinDisplay(newCount);
-}
-
-export function showToast(message: string) {
-    const container = document.getElementById('toast-container');
-    if(container){
-        const toast = document.createElement('div');
-        toast.className = 'toast';
-        toast.textContent = message;
-        container.appendChild(toast);
-
-        // Trigger the animation to slide in
-        setTimeout(() => {
-            toast.classList.add('toast-show');
-        }, 100); // Wait for the DOM to update
-
-        // Automatically hide the toast after 5 seconds
-        setTimeout(() => {
-            toast.classList.remove('toast-show');
-            setTimeout(() => container.removeChild(toast), 500); // Wait for animation to finish
-        }, 5000);
-}
 }
 
 export function triggerCoinanimation(coin:number){

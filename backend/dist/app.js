@@ -7,6 +7,8 @@ import Redis from 'redis';
 import AWS from 'aws-sdk';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import { google } from 'googleapis';
+import { GoogleAuth } from 'google-auth-library';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 AWS.config.update({
@@ -41,6 +43,15 @@ const tileLimiter = rateLimit({
     legacyHeaders: false,
     handler: (req, res) => res.status(429).json({ message: "Too many requests, please try again later." })
 });
+const setupGoogleSheetsClient = async () => {
+    const auth = new GoogleAuth({
+        keyFilename: 'path-to-your-service-account-file.json',
+        scopes: ['https://www.googleapis.com/auth/spreadsheets']
+    });
+    const client = await auth.getClient();
+    const sheets = google.sheets({ version: 'v4', auth: client });
+    return sheets;
+};
 async function updateTabCount(userId) {
     console.log("updating user id", userId);
     const params = {
@@ -151,6 +162,32 @@ app.get('/api/get-first-entry', (req, res) => {
             }
         }
     });
+});
+app.post('/api/feedback', async (req, res) => {
+    const { username, rating, feedbackType, feedbackText } = req.body;
+    try {
+        const sheets = await setupGoogleSheetsClient();
+        const spreadsheetId = '1Efyws-asG18ufQIDJgR7Ek3waivhsdYLrW3XcF7nukc'; // Replace with your actual spreadsheet ID
+        const range = 'Feedback!A:E';
+        const valueInputOption = 'USER_ENTERED';
+        const values = [
+            [new Date().toISOString(), username, rating, feedbackType, feedbackText]
+        ];
+        const request = {
+            spreadsheetId,
+            range,
+            valueInputOption,
+            resource: {
+                values
+            },
+        };
+        await sheets.spreadsheets.values.append(request);
+        res.status(200).send('Feedback recorded successfully');
+    }
+    catch (error) {
+        console.error('Error saving feedback:', error);
+        res.status(500).send('Error saving feedback');
+    }
 });
 app.listen(process.env.PORT || 3000, () => console.log(`Server running on port ${process.env.PORT || 3000}`));
 //# sourceMappingURL=app.js.map

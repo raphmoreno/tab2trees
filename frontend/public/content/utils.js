@@ -11,11 +11,18 @@ export function showFeedback() {
         console.log("couldn't find feedback form");
     }
 }
-async function submitFeedback() {
+export async function submitFeedback() {
+    var _a;
+    // Type assertions are needed for DOM elements when accessed directly.
     const username = document.getElementById('username').value;
-    const rating = document.querySelector('input[name="rating"]:checked').value;
+    const rating = (_a = document.querySelector('input[name="rating"]:checked')) === null || _a === void 0 ? void 0 : _a.value;
     const feedbackType = document.getElementById('feedbackType').value;
     const feedbackText = document.getElementById('feedbackText').value;
+    // Guarding against possible null values
+    if (!username || !rating || !feedbackType || !feedbackText) {
+        showToast('Please fill in all fields.');
+        return;
+    }
     try {
         const response = await fetch('http://tab.sora-mno.link/api/feedback', {
             method: 'POST',
@@ -24,7 +31,10 @@ async function submitFeedback() {
         });
         if (response.ok) {
             showToast('Feedback submitted successfully!');
-            document.getElementById('feedbackForm').style.display = 'none';
+            // Ensure the feedback form can be hidden safely
+            const feedbackForm = document.getElementById('feedbackForm');
+            if (feedbackForm)
+                feedbackForm.style.display = 'none';
         }
         else {
             throw new Error('Failed to submit feedback');

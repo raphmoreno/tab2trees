@@ -14,11 +14,18 @@ export function showFeedback(): void{
     }
 }
 
-async function submitFeedback() {
-    const username = document.getElementById('username').value;
-    const rating = document.querySelector('input[name="rating"]:checked').value;
-    const feedbackType = document.getElementById('feedbackType').value;
-    const feedbackText = document.getElementById('feedbackText').value;
+export async function submitFeedback(): Promise<void> {
+    // Type assertions are needed for DOM elements when accessed directly.
+    const username = (document.getElementById('username') as HTMLInputElement).value;
+    const rating = (document.querySelector('input[name="rating"]:checked') as HTMLInputElement)?.value;
+    const feedbackType = (document.getElementById('feedbackType') as HTMLSelectElement).value;
+    const feedbackText = (document.getElementById('feedbackText') as HTMLTextAreaElement).value;
+
+    // Guarding against possible null values
+    if (!username || !rating || !feedbackType || !feedbackText) {
+        showToast('Please fill in all fields.');
+        return;
+    }
 
     try {
         const response = await fetch('http://tab.sora-mno.link/api/feedback', {
@@ -26,9 +33,12 @@ async function submitFeedback() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, rating, feedbackType, feedbackText })
         });
+
         if (response.ok) {
             showToast('Feedback submitted successfully!');
-            document.getElementById('feedbackForm').style.display = 'none';
+            // Ensure the feedback form can be hidden safely
+            const feedbackForm = document.getElementById('feedbackForm');
+            if (feedbackForm) feedbackForm.style.display = 'none';
         } else {
             throw new Error('Failed to submit feedback');
         }

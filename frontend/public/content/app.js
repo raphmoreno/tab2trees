@@ -1,4 +1,4 @@
-import { updateDebugVisibility, updateTreeCounterDisplay, clearStorageData, toggleVisibility, displayGlobalTabCount, safeAddEventListener, initializeUserID, loadAssets, loadBackground } from './utils.js';
+import { updateDebugVisibility, updateTreeCounterDisplay, clearStorageData, toggleVisibility, displayGlobalTabCount, safeAddEventListener, initializeUserID, loadAssets, loadBackground, showFeedback, submitFeedback } from './utils.js';
 import { getLocation } from './weather.js';
 import { populateShop, updateCoinDisplay, getCoins, getPurchasedItems, updateCoins } from './shop.js';
 import { config } from './config.js';
@@ -78,7 +78,7 @@ function buildListeners(grid, assets) {
     });
     safeAddEventListener('overlay-cross', 'click', () => toggleVisibility('shopOverlay', false));
     safeAddEventListener('feedbackButton', 'click', () => showFeedback());
-    safeAddEventListener('sendFeedback', 'click', () => submitFeedback());
+    safeAddEventListener('submitFeedback', 'click', () => submitFeedback());
     //safeAddEventListener('motherlodeButton', 'click', motherlode);
     window.clearStorageData = clearStorageData;
     chrome.tabs.onCreated.addListener(function () {

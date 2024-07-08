@@ -1,4 +1,4 @@
-import { updateDebugVisibility, updateTreeCounterDisplay, clearStorageData, toggleVisibility, displayGlobalTabCount, safeAddEventListener, initializeUserID, loadAssets, loadBackground, fetchUserData } from './utils.js';
+import { updateDebugVisibility, updateTreeCounterDisplay, clearStorageData, toggleVisibility, displayGlobalTabCount, safeAddEventListener, initializeUserID, loadAssets, loadBackground, fetchUserData, showFeedback, submitFeedback } from './utils.js';
 import { fetchWeather, displayWeather, getLocation } from './weather.js';
 import { motherlode, populateShop, updateCoinDisplay, getCoins, getPurchasedItems, updateCoins } from './shop.js';
 import { config } from './config.js';
@@ -92,7 +92,7 @@ function buildListeners(grid: GridCell[][], assets:Asset[]) {
     });
     safeAddEventListener('overlay-cross', 'click', () => toggleVisibility('shopOverlay', false));
     safeAddEventListener('feedbackButton', 'click', () => showFeedback());
-    safeAddEventListener('sendFeedback', 'click', () => submitFeedback())
+    safeAddEventListener('submitFeedback', 'click', () => submitFeedback())
     //safeAddEventListener('motherlodeButton', 'click', motherlode);
     window.clearStorageData = clearStorageData;
 

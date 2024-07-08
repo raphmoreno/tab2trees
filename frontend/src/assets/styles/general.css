@@ -544,3 +544,118 @@ header {
     opacity: 0;
 }
 
+/* Feedback Button and Form Container */
+#feedbackButton {
+    position: fixed;
+    right: 10px;
+    bottom: 10px;
+    padding: 10px 15px;
+    font-size: 16px;
+    background-color: none;
+    color: black;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#feedbackButton:hover {
+    background-color: #01010131;
+}
+
+#feedbackForm {
+    position: fixed;
+    right: 10px;
+    bottom: 60px; /* Adjust based on button position */
+    background: rgba(255, 255, 255, 0.95);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: none; /* Initially hidden */
+    width: 300px;
+    z-index: 1000;
+}
+
+#feedbackForm.visible {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Input and Textarea Styling */
+#username, #feedbackText, #ratingContainer input[type="radio"], #feedbackType {
+    padding: 8px;
+    margin: 5px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 100%;
+}
+
+#feedbackText {
+    height: 100px; /* Adjustable based on need */
+}
+
+/* Feedback Type Selector */
+#feedbackType {
+    margin-bottom: 10px;
+}
+
+/* Ratings Container */
+/* Hide the radio buttons */
+.star-rating input[type="radio"] {
+    display: none;
+}
+
+/* Styling for the stars */
+
+div#ratingContainer {
+    display: flex;
+    align-items: center;
+    column-gap: 10px;
+    padding:8px;
+}
+
+.star-rating label {
+    float: right;
+    padding: 5px;
+    font-size: 0; /* No text size */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: url('../svg/icons/star-empty.svg') no-repeat center; /* Star outline */
+    background-size: contain;
+    width: 12px;
+    height: 12px;
+    display: inline-block;
+}
+
+/* When a star is hovered or selected */
+.star-rating label:hover,
+.star-rating label:hover ~ label,
+.star-rating input[type="radio"]:checked ~ label {
+    background: url('../svg/icons/star-filled.svg') no-repeat center; /* Filled star */
+    background-size: contain; /* Ensure the SVG fits the label size */
+}
+
+/* Revert the order of stars to allow hover to fill from left to right */
+.star-rating {
+    direction: rtl; /* Flip the container */
+}
+
+.star-rating label {
+    direction: ltr; /* Flip the stars back */
+}
+
+/* Submit Button Styling */
+#feedbackForm button {
+    padding: 10px 15px;
+    font-size: 16px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#feedbackForm button:hover {
+    background-color: #218838;
+}

@@ -1,6 +1,6 @@
 import { updateDebugVisibility, updateTreeCounterDisplay, clearStorageData, toggleVisibility, displayGlobalTabCount, safeAddEventListener, initializeUserID, loadAssets, loadBackground, fetchUserData } from './utils.js';
 import { fetchWeather, displayWeather, getLocation } from './weather.js';
-import { motherlode, populateShop, updateCoinDisplay, getCoins, getPurchasedItems, incrementCoins } from './shop.js';
+import { motherlode, populateShop, updateCoinDisplay, getCoins, getPurchasedItems, updateCoins } from './shop.js';
 import { config } from './config.js';
 import { Asset, Environment, ShopItem } from '../types/assets.js';
 import { GridCell, GridArea, AssetPlacement, AppState, PlacementStrategy } from '../types/grid';
@@ -166,7 +166,7 @@ async function newTabHandler(assets:Asset[]) {
         else{
             // implement reseting of forest, and adding a new coin
             let trees = [];
-            await incrementCoins(1); // Increment coins by 1
+            await updateCoins(1); // Increment coins by 1
         }
     } catch (error) {
         console.error("Error handling new tab:", error);

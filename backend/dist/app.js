@@ -55,6 +55,19 @@ async function updateTabCount(userId) {
     };
     return dynamoDB.update(params).promise();
 }
+async function updateCoins(userId, coinChange) {
+    const params = {
+        TableName: 'UserStats',
+        Key: { user_id: userId },
+        UpdateExpression: 'SET coin_count = if_not_exists(coin_count, :start) + :inc',
+        ExpressionAttributeValues: {
+            ':inc': coinChange,
+            ':start': 0
+        },
+        ReturnValues: 'UPDATED_NEW'
+    };
+    return dynamoDB.update(params).promise();
+}
 app.use(cors());
 app.post('/api/add-tab', tileLimiter, async (req, res) => {
     var _a;
@@ -100,7 +113,7 @@ app.post('/updateCoins', tileLimiter, async (req, res) => {
     var _a;
     const { userId, coinChange } = req.body;
     try {
-        let data = await addCoins(userId, coinChange);
+        let data = await updateCoins(userId, coinChange);
         res.json({ message: 'Coins added successfully.', coinCount: (_a = data.Attributes) === null || _a === void 0 ? void 0 : _a.coin_count });
     }
     catch (error) {
@@ -108,19 +121,6 @@ app.post('/updateCoins', tileLimiter, async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
-async function addCoins(userId, coinsToAdd) {
-    const params = {
-        TableName: 'UserStats',
-        Key: { user_id: userId },
-        UpdateExpression: 'SET coin_count = if_not_exists(coin_count, :start) + :inc',
-        ExpressionAttributeValues: {
-            ':inc': coinsToAdd,
-            ':start': 0
-        },
-        ReturnValues: 'UPDATED_NEW'
-    };
-    return dynamoDB.update(params).promise();
-}
 app.get('/api/tiles', async (req, res) => {
     try {
         const globalTileCount = await client.get('globalTileCount');

@@ -43,7 +43,7 @@ export async function getCoins(): Promise<number> {
     });
 }
 
-export async function updateCoins(coinChange: number): Promise<void> {
+export async function updateCoins(newCoin: number): Promise<void> {
     try {
         const userId = await chrome.storage.local.get('userId');
         const response = await fetch('http://tab.sora-mno.link/api/updateCoins', {
@@ -51,11 +51,12 @@ export async function updateCoins(coinChange: number): Promise<void> {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ userId, coinChange })
+            body: JSON.stringify({ userId, newCoin })
         });
         const data = await response.json();
         if (response.ok) {
             updateCoinDisplay(data.coinCount);
+            triggerCoinanimation(newCoin)
         } else {
             throw new Error(data.message || 'Failed to update coins');
         }
@@ -186,28 +187,6 @@ export function showToast(message: string) {
             setTimeout(() => container.removeChild(toast), 500); // Wait for animation to finish
         }, 5000);
 }
-}
-
-export function incrementCoins(coin: number) {
-    chrome.storage.local.get('userId', function (result) {
-        const userId = result.userId
-
-        fetch('http://tab.sora-mno.link/api/update-coins', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ userId, coin })  // Increment coins
-        })
-            .then(response => response.json())
-            .then(data => {
-                updateCoinDisplay(data.coinCount);
-                triggerCoinanimation(coin)
-            })
-            .catch(error => {
-                console.error('Error updating coin count:', error)
-            });
-    })
 }
 
 export function triggerCoinanimation(coin:number){

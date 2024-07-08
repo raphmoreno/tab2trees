@@ -1,6 +1,6 @@
 import { updateDebugVisibility, updateTreeCounterDisplay, clearStorageData, toggleVisibility, displayGlobalTabCount, safeAddEventListener, initializeUserID, loadAssets, loadBackground } from './utils.js';
 import { getLocation } from './weather.js';
-import { populateShop, updateCoinDisplay, getCoins, getPurchasedItems, incrementCoins } from './shop.js';
+import { populateShop, updateCoinDisplay, getCoins, getPurchasedItems, updateCoins } from './shop.js';
 import { config } from './config.js';
 import { renderAssetOnPosition, createIsometricGrid, spawnAsset, spawnRandomTree } from './grid.js';
 let forestInitialized = false; // Flag to check if the forest has been initialized
@@ -141,7 +141,7 @@ async function newTabHandler(assets) {
         else {
             // implement reseting of forest, and adding a new coin
             let trees = [];
-            await incrementCoins(1); // Increment coins by 1
+            await updateCoins(1); // Increment coins by 1
         }
     }
     catch (error) {

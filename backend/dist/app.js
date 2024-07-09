@@ -120,7 +120,7 @@ app.get('/api/user', async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
-app.post('/updateCoins', tileLimiter, async (req, res) => {
+app.post('/api/updateCoins', tileLimiter, async (req, res) => {
     var _a;
     const { userId, coinChange } = req.body;
     try {

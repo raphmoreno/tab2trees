@@ -135,7 +135,7 @@ app.get('/api/user', async (req, res) => {
   }
 });
 
-app.post('/updateCoins', tileLimiter, async (req, res) => {
+app.post('/api/updateCoins', tileLimiter, async (req, res) => {
   const { userId, coinChange } = req.body;
   try {
       let data = await updateCoins(userId, coinChange);

@@ -2,7 +2,7 @@ import { updateDebugVisibility, updateTreeCounterDisplay, clearStorageData, togg
 import { getLocation } from './weather.js';
 import { populateShop, updateCoinDisplay, getCoins, getPurchasedItems, updateCoins } from './shop.js';
 import { config } from './config.js';
-import { renderAssetOnPosition, createIsometricGrid, spawnAsset, spawnRandomTree } from './grid.js';
+import { renderAssetOnPosition, createIsometricGrid, spawnAsset, resetGridAvailability } from './grid.js';
 let forestInitialized = false; // Flag to check if the forest has been initialized
 const placementStrategy = "random";
 const defaultEnvironment = {
@@ -87,7 +87,8 @@ function buildListeners(grid, assets) {
     // Listener for spawning random tree
     if (SVGCanvas && appSwitcherButton && appSwitcherMenu) {
         (_a = document.getElementById('test-button')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', () => {
-            spawnRandomTree(assets, grid, SVGCanvas, placementStrategy).catch(console.error);
+            updateCoins(1);
+            //spawnRandomTree(assets, grid, SVGCanvas, placementStrategy).catch(console.error);
         });
         // Listener for the app switcher
         appSwitcherButton.addEventListener('click', function () {
@@ -141,8 +142,12 @@ async function newTabHandler(assets) {
             });
         }
         else {
-            // implement reseting of forest, and adding a new coin
             let trees = [];
+            resetGridAvailability(grid);
+            chrome.storage.local.set({
+                forestState: JSON.stringify(trees), // Save updated trees
+                gridState: JSON.stringify(grid), // Save updated grid
+            });
             await updateCoins(1); // Increment coins by 1
         }
     }

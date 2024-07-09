@@ -1,4 +1,5 @@
 import { ShopItem, Asset, Environment } from "../types/assets";
+import { GridCell } from "../types/grid";
 
 // Define a generic type for items to be more flexible
 export function getRandomItem<T>(items: T[]): T {
@@ -268,7 +269,7 @@ export async function fetchUserData(userId: string) {
         }
         const data = await response.json();
         const tabCount = data.tab_Count || 0; // Default to 0 if undefined
-        const coinCount = data.coin_Count || 0; // Default to 0 if undefined
+        const coinCount = data.coin_count || 0; // Default to 0 if undefined
         console.log('Tab Count:', tabCount, 'Coin Count:', coinCount);
         return { tabCount, coinCount };
     } catch (error) {
@@ -297,3 +298,4 @@ export function showToast(message: string) {
         }, 5000);
 }
 }
+

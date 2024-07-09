@@ -123,4 +123,11 @@ export async function spawnRandomTree(assets, grid, canvasBase, placementStrateg
     //console.log(`Found asset: ${asset.type}`);
     spawnAsset(asset, grid, placementStrategy, canvasBase);
 }
+export function resetGridAvailability(grid) {
+    for (let row of grid) {
+        for (let cell of row) {
+            cell.available = true;
+        }
+    }
+}
 //# sourceMappingURL=grid.js.map

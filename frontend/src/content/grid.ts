@@ -150,3 +150,11 @@ export async function spawnRandomTree(
     //console.log(`Found asset: ${asset.type}`);
     spawnAsset(asset, grid, placementStrategy, canvasBase);
 }
+
+export function resetGridAvailability(grid: GridCell[][]): void {
+    for (let row of grid) {
+        for (let cell of row) {
+            cell.available = true;
+        }
+    }
+}

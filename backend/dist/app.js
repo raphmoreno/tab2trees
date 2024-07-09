@@ -122,9 +122,9 @@ app.get('/api/user', async (req, res) => {
 });
 app.post('/api/updateCoins', tileLimiter, async (req, res) => {
     var _a;
-    const { userId, coinChange } = req.body;
+    const { userId, newCoin } = req.body;
     try {
-        let data = await updateCoins(userId, coinChange);
+        let data = await updateCoins(userId, newCoin);
         res.json({ message: 'Coins added successfully.', coinCount: (_a = data.Attributes) === null || _a === void 0 ? void 0 : _a.coin_count });
     }
     catch (error) {

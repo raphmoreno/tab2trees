@@ -1,4 +1,4 @@
-import { fetchUserData, showToast } from "./utils.js";
+import { fetchUserData, fetchUserId, showToast } from "./utils.js";
 
 // Define an interface for shop items
 interface ShopItem {
@@ -45,7 +45,7 @@ export async function getCoins(): Promise<number> {
 
 export async function updateCoins(newCoin: number): Promise<void> {
     try {
-        const userId = await chrome.storage.local.get('userId');
+        const userId = await fetchUserId();
         const response = await fetch('http://tab.sora-mno.link/api/updateCoins', {
             method: 'POST',
             headers: {

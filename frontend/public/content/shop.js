@@ -1,4 +1,4 @@
-import { fetchUserData, showToast } from "./utils.js";
+import { fetchUserData, fetchUserId, showToast } from "./utils.js";
 const shopItems = [
     { id: 1, name: "Oak (Autumn)", type: "tree", cost: 30, img: "../src/assets/svg/tree-2.svg", typeId: 'oak-autumn' },
     { id: 2, name: "Pine Tree", type: "tree", cost: 20, img: "../src/assets/svg/pine.svg", typeId: 'pine' },
@@ -32,7 +32,7 @@ export async function getCoins() {
 }
 export async function updateCoins(newCoin) {
     try {
-        const userId = await chrome.storage.local.get('userId');
+        const userId = await fetchUserId();
         const response = await fetch('http://tab.sora-mno.link/api/updateCoins', {
             method: 'POST',
             headers: {

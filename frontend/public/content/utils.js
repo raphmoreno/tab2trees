@@ -275,4 +275,27 @@ export function showToast(message) {
         }, 5000);
     }
 }
+export async function getFromChromeStorage(key) {
+    return new Promise((resolve, reject) => {
+        chrome.storage.local.get(key, (result) => {
+            if (chrome.runtime.lastError) {
+                // Handle errors when chrome storage fails
+                reject(chrome.runtime.lastError);
+            }
+            else {
+                resolve(result[key]); // Return the specific key result
+            }
+        });
+    });
+}
+export async function fetchUserId() {
+    try {
+        const userId = await getFromChromeStorage('userId');
+        console.log('Retrieved User ID:', userId);
+        return userId; // Use or return the userId as needed
+    }
+    catch (error) {
+        console.error('Failed to retrieve user ID:', error);
+    }
+}
 //# sourceMappingURL=utils.js.map

@@ -133,7 +133,7 @@ export async function populateShop() {
 export async function purchaseItem(item) {
     const currentCoins = await getCoins();
     if (currentCoins >= item.cost) {
-        updateCoins(currentCoins - item.cost);
+        updateCoins(-item.cost);
         addPurchasedItem(item);
         showToast('Purchase successful!');
     }

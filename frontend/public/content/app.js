@@ -45,8 +45,8 @@ async function initializeApp() {
         const appState = await initializeAppState();
         buildListeners(appState.grid, assets);
         updateDebugVisibility(config.isDebugMode);
-        const coinCount = await getCoins();
         initializeUserID();
+        const coinCount = await getCoins();
         displayGlobalTabCount();
         updateTreeCounterDisplay();
         updateCoinDisplay(coinCount);

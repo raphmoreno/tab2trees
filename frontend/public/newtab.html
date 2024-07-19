@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jersey+10&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../src/assets/styles/general.css">
+    <title>🌲🌳 New Tab 🌲🌳</title>
+</head>
+
+<body>
+    <header>
+        <div class="header__left">
+            <div id="title">Tab 2 Trees</div>
+            <div id="description">Each new tab grows a part of your forest. A tree is planted in real life every 1,000
+                tabs
+                opened by the community.</div>
+            <div id="additional-info">
+                How do we plant trees ?
+                <div class="tooltip-info">Every 1000 tabs opened by the community, our team donates to
+                    onetreeplanted.org association to plant a tree in a geography that needs it most </div>
+            </div>
+
+            <div id="tileCount"></div>
+        </div>
+        <div class="header__center">
+            <div class="search-container">
+                <form action="https://www.ecosia.org/search" method="GET">
+                    <input type="text" name="q" class="search-input" placeholder="Search Ecosia or type a URL"
+                        autofocus>
+                    <button type="submit" class="search-button">Search</button>
+                </form>
+            </div>
+        </div>
+        <div class="header__right">
+            <div id="appSwitcherButton" class="app-switcher-icon">
+                <svg class="google_appswitch" focusable="false" viewBox="0 0 24 24">
+                    <path
+                        d="M6,8c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM12,20c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM6,20c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM6,14c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM12,14c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM16,6c0,1.1 0.9,2 2,2s2,-0.9 2,-2 -0.9,-2 -2,-2 -2,0.9 -2,2zM12,8c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM18,14c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM18,20c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2z">
+                    </path>
+                    <image src="https://ssl.gstatic.com/gb/images/bar/al-icon.png" alt="" height="24" width="24"
+                        style="border:none;display:none \9"></image>
+                </svg>
+            </div>
+
+            <div id="appSwitcherMenu" class="app-switcher-menu" style="display: none;">
+                <ul>
+                    <li><a href="https://docs.google.com"><img src="../src/assets/images/icons8-google-docs.svg"
+                                alt="Docs">Docs</a></li>
+                    <li><a href="https://mail.google.com"><img src="../src/assets/images/icons8-gmail.svg"
+                                alt="Gmail">Gmail</a></li>
+                    <li><a href="https://sheets.google.com"><img src="../src/assets/images/icons8-google-sheets.svg"
+                                alt="Sheets">Sheets</a></li>
+                    <li><a href="https://maps.google.com"><img src="../src/assets/images/icons8-google-maps.svg"
+                                alt="Maps">Maps</a></li>
+                    <li><a href="https://calendar.google.com"><img src="../src/assets/images/icons8-google-calendar.svg"
+                                alt="Calendar">Cal</a></li>
+                    <li><a href="https://drive.google.com"><img src="../src/assets/images/icons8-google-drive.svg"
+                                alt="Drive">Drive</a></li>
+
+                    <!-- Add more apps as needed -->
+                </ul>
+            </div>
+        </div>
+    </header>
+    <div id="isometric-grid"></div>
+    <div id="canvas"></div>
+    <div id="treeInfo">
+        <span class="treeIcon">
+            <img src="../src/assets/images/tree.png" alt="coins" height="32" width="32" />
+        </span>
+        <span id="treeCounter">Trees: 0</span>
+    </div>
+    <div id="coinInfo">
+        <span class="coinIcon">
+            <img src="../src/assets/images/coin.png" alt="coins" height="32" width="32" />
+        </span>
+        <span id="coinCounter">Coins: 0</span>
+    </div>
+    <button id="shopButton" class="button-main" style="position: absolute; bottom: 20px; left: 20px;">shop</button>
+    <div id="shopOverlay"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8);">
+        <div id="overlay-cross">
+            <svg fill="#ffffff" height="32px" width="32px" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg"
+                xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 490 490" xml:space="preserve" stroke="#ffffff">
+                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                <g id="SVGRepo_iconCarrier">
+                    <polygon
+                        points="456.851,0 245,212.564 33.149,0 0.708,32.337 212.669,245.004 0.708,457.678 33.149,490 245,277.443 456.851,490 489.292,457.678 277.331,245.004 489.292,32.337 ">
+                    </polygon>
+                </g>
+            </svg>
+        </div>
+        <div id="shopGrid">
+            <!-- Items will be populated here -->
+        </div>
+    </div>
+    <div id="weatherInfo" class="hidden"></div>
+    <button id="feedbackButton">Give Feedback</button>
+    <div id="feedbackForm" style="display:none;">
+        <input type="text" id="username" placeholder="Username" required>
+        <div id="ratingContainer">
+            <span>Rating:</span>
+            <!-- Hidden radio buttons and visual SVG stars -->
+            <div class="star-rating">
+                <input type="radio" id="star5" name="rating" value="5"><label for="star5" title="5 stars"></label>
+                <input type="radio" id="star4" name="rating" value="4"><label for="star4" title="4 stars"></label>
+                <input type="radio" id="star3" name="rating" value="3"><label for="star3" title="3 stars"></label>
+                <input type="radio" id="star2" name="rating" value="2"><label for="star2" title="2 stars"></label>
+                <input type="radio" id="star1" name="rating" value="1"><label for="star1" title="1 star"></label>
+            </div>
+        </div>
+        <select id="feedbackType">
+            <option value="new idea">New Idea</option>
+            <option value="bug report">Bug Report</option>
+        </select>
+        <textarea id="feedbackText" placeholder="Your feedback"></textarea>
+        <button id="submitFeedback">Send Feedback</button>
+    </div>
+    <button id="donateButton" class="button-main hidden" style="position: absolute; bottom: 20px; right: 20px;">
+        <a href="https://patreon.com/tab2trees"> Donate </a>
+    </button>
+    <button id="test-button" class="button-main" style="position: absolute; bottom: 60px; right: 20px; display:none">
+        <a>Spawn</a>
+    </button>
+
+    <script type="module" src="content/app.js"></script>
+
+
+    <div id="toast-container"
+        style="position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); z-index: 1000;"></div>
+</body>
+
+</html>

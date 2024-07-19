@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "build": "tsc",
+    "start": "serve dist"
+  },
+  "dependencies": {
+    "@types/chrome": "^0.0.268",
+    "typescript": "^5.5.3"
+  }
+}

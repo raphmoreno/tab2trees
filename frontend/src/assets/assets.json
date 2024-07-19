@@ -1,0 +1,37 @@
+[
+    {
+        "type": "pine",
+        "size": { "width": 65, "height": 90 },
+        "groundWidth": 35,
+        "groundHeight": 35,
+        "svgPath": "../src/assets/svg/trees/pine.svg"
+    },
+    {
+        "type": "oak-autumn",
+        "size": { "width": 87.5, "height": 105 },
+        "groundWidth": 50,
+        "groundHeight": 35,
+        "svgPath": "../src/assets/svg/trees/oak-autumn.svg"
+    },
+    {
+        "type": "oak-spring",
+        "size": { "width": 87.5, "height": 105 },
+        "groundWidth": 50,
+        "groundHeight": 35,
+        "svgPath": "../src/assets/svg/trees/oak-spring.svg"
+    },
+    {
+        "type": "cherry-blossom-summer",
+        "size": { "width": 90, "height": 90 },
+        "groundWidth": 50,
+        "groundHeight": 50,
+        "svgPath": "../src/assets/svg/trees/cherry-blossom-summer.svg"
+    },
+    {
+        "type": "cherry-blossom-spring",
+        "size": { "width": 80, "height": 80 },
+        "groundWidth": 50,
+        "groundHeight": 50,
+        "svgPath": "../src/assets/svg/trees/cherry-blossom-spring.svg"
+    }
+]

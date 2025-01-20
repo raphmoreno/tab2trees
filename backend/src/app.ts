@@ -114,20 +114,33 @@ app.post('/api/add-tab', tileLimiter, async (req, res) => {
 });
 
 app.get('/api/user', async (req, res) => {
-  const { userId } = req.query; // Access userId from query parameters
+  const { userId } = req.query;
   if (!userId) {
     return res.status(400).json({ error: 'userId is required' });
   }
   try {
     const params = {
       TableName: 'UserStats',
-      Key: { user_id: userId } // Assuming 'user_id' is the correct primary key attribute
+      Key: { user_id: userId }
     };
     const data = await dynamoDB.get(params).promise();
+    
     if (data.Item) {
       res.json(data.Item);
     } else {
-      res.status(404).json({ message: "User not found" });
+      // Create new user entry with default values
+      const newUser = {
+        user_id: userId,
+        tab_Count: 0,
+        coin_count: 0
+      };
+      
+      await dynamoDB.put({
+        TableName: 'UserStats',
+        Item: newUser
+      }).promise();
+      
+      res.json(newUser);
     }
   } catch (error) {
     console.error('DynamoDB Error:', error);

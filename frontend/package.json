@@ -1,7 +1,8 @@
 {
   "scripts": {
     "build": "tsc",
-    "start": "serve dist"
+    "start": "serve dist",
+    "dev": "tsc --watch"
   },
   "dependencies": {
     "@types/chrome": "^0.0.268",

@@ -194,14 +194,14 @@ export function generateUUID() {
 
 export function storeUUID(uuid: string) {
     chrome.storage.local.set({ userId: uuid }, function () {
-        //console.log('User ID is set to ' + uuid);
+        console.log('User ID is set to ' + uuid);
     });
 }
 
 export function initializeUserID() {
     chrome.storage.local.get('userId', function (result) {
         if (result.userId) {
-            //console.log('Existing User ID found:', result.userId);
+            console.log('Existing User ID found:', result.userId);
         } else {
             const uuid = generateUUID();
             storeUUID(uuid);
